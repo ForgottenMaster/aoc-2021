@@ -9,7 +9,7 @@ In order to install Rustup, you can visit: https://rustup.rs/ and follow the ins
 Cargo will indicate any further dependencies required as you follow the next steps to run the binaries
 
 # Running The Solutions #
-Each day will have its own self-contained binary in a file with the same name (located in the src/bin folder). This means that all the code related to that individual exercise is in that file and you don't have to wade through lots of different files to find out how the code works.
+Each day will have its own binary in a file with the same name (located in the src/bin folder). Puzzle specific code will be located entirely in this file, however some code that might be useful in other cases may be factored out into the library file. This file is located at src/lib.rs if you want to look at the helpers, etc.
 
 I'll be downloading the input files for each day also and placing them in the input folder using the same naming convention.
 
