@@ -30,7 +30,7 @@ This table identifies which solutions have been completed and which are still ye
 
 |Day|Part 1|Part 2|
 |:-:|:-:|:-:|
-|01|:heavy_check_mark:|:x:|
+|01|:heavy_check_mark:|:heavy_check_mark:|
 |02|:x:|:x:|
 |03|:x:|:x:|
 |04|:x:|:x:|
