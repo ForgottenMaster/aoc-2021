@@ -1,3 +1,4 @@
 target/
+src/.idea/
 src/bin/.idea/
 Cargo.lock

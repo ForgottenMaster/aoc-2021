@@ -13,17 +13,28 @@ Each day will have its own self-contained binary in a file with the same name (l
 
 I'll be downloading the input files for each day also and placing them in the input folder using the same naming convention.
 
-In order to run one of the binaries, you can use the following command at the command line (assuming you're inside the project directory)
+In order to run one of the binaries in release mode, you can use the following command at the command line (assuming you're inside the project directory)
 
 ```
-cargo run day<day_number>
+cargo run day<day_number> --release
 ```
 
 For example to run day 3, we can do
 
 ```
-cargo run day03
+cargo run day03 --release
 ```
+
+# Benchmarks #
+Each solution when run will output, along with the part 1 and 2 answers, a timing of how long it took to complete. This is a crude
+benchmark and isn't as reliable as using a benchmarking crate such as criterion, but gives a general idea of the time it takes.
+
+Please bear in mind that the timings also include file I/O and not just the algorithm itself.
+
+# Dependencies #
+I won't be including any dependencies in the project unless absolutely necessary, for example if a problem
+outputs an image with the answer in it. Any functionality I add on top of the standard library will be hand-written
+by myself.
 
 # Completed Solutions #
 This table identifies which solutions have been completed and which are still yet to be done. Ideally these will get checked off at a rate of 2 per day to keep upto speed with release.
