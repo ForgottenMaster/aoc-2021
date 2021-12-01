@@ -9,20 +9,20 @@ In order to install Rustup, you can visit: https://rustup.rs/ and follow the ins
 Cargo will indicate any further dependencies required as you follow the next steps to run the binaries
 
 # Running The Solutions #
-Each day + part will have its own self-contained binary in a separate file. This means that all the code related to that individual exercise is in that file and you don't have to wade through lots of different files to find out how the code works.
+Each day will have its own self-contained binary in a file with the same name (located in the src/bin folder). This means that all the code related to that individual exercise is in that file and you don't have to wade through lots of different files to find out how the code works.
 
-I'll be copying the data that goes along with the exercise and embedding it into the file itself, so no need to get any external data files.
+I'll be downloading the input files for each day also and placing them in the input folder using the same naming convention.
 
 In order to run one of the binaries, you can use the following command at the command line (assuming you're inside the project directory)
 
 ```
-cargo run day<day_number>-part<part_number>
+cargo run day<day_number>
 ```
 
-These will be the names of the files also so will be easy to find. For example to run part 2 of day 3, we can do
+For example to run day 3, we can do
 
 ```
-cargo run day03-part2
+cargo run day03
 ```
 
 # Completed Solutions #
