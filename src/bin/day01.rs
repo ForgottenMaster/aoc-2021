@@ -1,4 +1,4 @@
-use aoc_2021::WithWindows;
+use aoc_2021::MapWindowsExt;
 use std::{
     fs::File,
     io::{BufRead, BufReader, Result, Seek},
@@ -28,8 +28,8 @@ fn run(reader: impl BufRead, window_size: usize) -> u32 {
             let int = line.trim().parse().ok()?;
             Some(int)
         }) // check whether the line is valid and parse as an integer if we can
-        .with_windows(window_size, |elems| elems.into_iter().sum()) // for each group of window_size we want to sum them
-        .with_windows(2, |elems: &[u32]| (elems[1] > elems[0]) as u32) // emit 1 if the element is greater than previous, 0 otherwise
+        .map_windows(window_size, |elems: &[u32]| elems.into_iter().sum()) // for each group of window_size we want to sum them
+        .map_windows(2, |elems: &[u32]| (elems[1] > elems[0]) as u32) // emit 1 if the element is greater than previous, 0 otherwise
         .sum() // sum all the 1's we've emitted
 }
 

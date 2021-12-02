@@ -1,13 +1,12 @@
-/// Custom Iterator that will create sliding windows of a specified length along
-/// the wrapped iterator.
-pub struct Windows<T, I, F> {
+/// Struct produced by the "map_windows" function of an Iterator
+pub struct MapWindows<T, I, F> {
     wrapped: I,
     func: F,
     window_size: usize,
     window: Vec<T>,
 }
 
-impl<T, U, I, F> Iterator for Windows<T, I, F>
+impl<T, U, I, F> Iterator for MapWindows<T, I, F>
 where
     I: Iterator<Item = T>,
     F: Fn(&[T]) -> U,
@@ -41,18 +40,18 @@ where
     }
 }
 
-/// Extension trait to add the "with_windows" adapter to any Iterator
+/// Extension trait to add the "map_windows" adapter to any Iterator
 /// that supports it.
-pub trait WithWindows<T, U>: Iterator<Item = T> + Sized {
-    fn with_windows<F: Fn(&[T]) -> U>(self, window_size: usize, func: F) -> Windows<T, Self, F>;
+pub trait MapWindowsExt<T>: Sized {
+    fn map_windows<F>(self, window_size: usize, func: F) -> MapWindows<T, Self, F>;
 }
 
-impl<T, U, S> WithWindows<T, U> for S
+impl<T, S> MapWindowsExt<T> for S
 where
-    S: Iterator<Item = T> + Sized,
+    S: Sized,
 {
-    fn with_windows<F: Fn(&[T]) -> U>(self, window_size: usize, func: F) -> Windows<T, Self, F> {
-        Windows {
+    fn map_windows<F>(self, window_size: usize, func: F) -> MapWindows<T, Self, F> {
+        MapWindows {
             wrapped: self,
             func,
             window_size,
