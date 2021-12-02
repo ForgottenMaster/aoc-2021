@@ -16,13 +16,13 @@ I'll be downloading the input files for each day also and placing them in the in
 In order to run one of the binaries in release mode, you can use the following command at the command line (assuming you're inside the project directory)
 
 ```
-cargo run day<day_number> --release
+cargo run --bin day<day_number> --release
 ```
 
-For example to run day 3, we can do
+For example to run day 2, we can do
 
 ```
-cargo run day03 --release
+cargo run --bin day02 --release
 ```
 
 # Benchmarks #
@@ -42,7 +42,7 @@ This table identifies which solutions have been completed and which are still ye
 |Day|Part 1|Part 2|
 |:-:|:-:|:-:|
 |01|:heavy_check_mark:|:heavy_check_mark:|
-|02|:x:|:x:|
+|02|:heavy_check_mark:|:x:|
 |03|:x:|:x:|
 |04|:x:|:x:|
 |05|:x:|:x:|

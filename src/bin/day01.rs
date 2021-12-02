@@ -1,4 +1,4 @@
-use aoc_2021::*;
+use aoc_2021::WithWindows;
 use std::{
     fs::File,
     io::{BufRead, BufReader, Result, Seek},
