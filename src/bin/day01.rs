@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     println!("Part 2 => {}", run(&mut reader, 3));
     let end_time = Instant::now();
     let duration = end_time.duration_since(start_time);
-    println!("Took {} nanoseconds to run", duration.as_nanos());
+    println!("Took {} microseconds to run", duration.as_micros());
     Ok(())
 }
 
