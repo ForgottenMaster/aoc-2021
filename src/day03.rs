@@ -1,21 +1,18 @@
 use {
-    aoc_2021::{ParseBinaryStringError, ParsedBinaryString},
+    crate::{ParseBinaryStringError, ParsedBinaryString},
     std::{
+        fmt::Display,
         fs::File,
         io::{BufRead, BufReader},
         iter::repeat,
         ops::{Add, Shl},
-        time::Instant,
     },
 };
 
-fn main() -> Result<(), SolutionError> {
-    let start_time = Instant::now();
-    let file = File::open("input/day03.txt").map_err(|err| SolutionError::IOError(err))?;
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
+    let file = File::open("input/day03.txt")?;
     let reader = BufReader::new(file);
-    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)
-        .map_err(|err| SolutionError::ReadDiagnosticReportError(err))?
-        .0;
+    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.0;
     let bit_count = if diagnostic_report.len() > 0 {
         diagnostic_report[0].input_string_bit_count()
     } else {
@@ -26,29 +23,17 @@ fn main() -> Result<(), SolutionError> {
         .map(|elem| *elem.parsed())
         .collect::<Vec<_>>();
 
-    // Part 1 - need gamma and epsilon rates from the diagnostic report
-    {
-        let bit_counts = calculate_bit_counts(&diagnostic_report, bit_count);
-        let gamma_rate = extract_gamma_rate(&bit_counts);
-        let epsilon_rate = extract_epsilon_rate(&bit_counts);
-        println!("Part 1 => {}", gamma_rate * epsilon_rate);
-    }
+    let bit_counts = calculate_bit_counts(&diagnostic_report, bit_count);
+    let gamma_rate = extract_gamma_rate(&bit_counts);
+    let epsilon_rate = extract_epsilon_rate(&bit_counts);
+    let part_1 = gamma_rate * epsilon_rate;
 
-    // Part 2 - need oxygen generator rating and co2 scrubber rating
-    {
-        let oxygen_generator_rating =
-            extract_oxygen_generator_rating(diagnostic_report.clone(), bit_count);
-        let co2_scrubber_rating = extract_co2_scrubber_rating(diagnostic_report, bit_count);
-        println!(
-            "Part 2 => {}",
-            oxygen_generator_rating * co2_scrubber_rating
-        );
-    }
+    let oxygen_generator_rating =
+        extract_oxygen_generator_rating(diagnostic_report.clone(), bit_count);
+    let co2_scrubber_rating = extract_co2_scrubber_rating(diagnostic_report, bit_count);
+    let part_2 = oxygen_generator_rating * co2_scrubber_rating;
 
-    let end_time = Instant::now();
-    let duration = end_time.duration_since(start_time);
-    println!("Took {} microseconds to run", duration.as_micros());
-    Ok(())
+    Ok((Box::new(part_1), Box::new(part_2)))
 }
 
 fn extract_oxygen_generator_rating(mut report: Vec<u32>, bit_count: usize) -> u32 {
@@ -132,9 +117,21 @@ fn extract_epsilon_rate(report: &[(u32, u32)]) -> u32 {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
-enum SolutionError {
+pub enum ExecutionError {
     IOError(std::io::Error),
     ReadDiagnosticReportError(ReadDiagnosticReportError),
+}
+
+impl From<ReadDiagnosticReportError> for ExecutionError {
+    fn from(value: ReadDiagnosticReportError) -> Self {
+        Self::ReadDiagnosticReportError(value)
+    }
+}
+
+impl From<std::io::Error> for ExecutionError {
+    fn from(value: std::io::Error) -> Self {
+        Self::IOError(value)
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +167,7 @@ impl<T: Add<T, Output = T> + From<bool> + Shl<u8, Output = T>> DiagnosticReport<
 }
 
 #[derive(Debug)]
-enum ReadDiagnosticReportError {
+pub enum ReadDiagnosticReportError {
     ParseBinaryStringError(ParseBinaryStringError),
     InvalidLineLength { line_num: usize, expected: usize },
 }

@@ -1,27 +1,32 @@
 use std::{
+    fmt::Display,
     fs::File,
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader, Error},
     str::FromStr,
-    time::Instant,
 };
 
-fn main() -> std::io::Result<()> {
-    let start_time = Instant::now();
+#[derive(Debug)]
+pub enum ExecutionError {
+    IOError(Error),
+}
+
+impl From<Error> for ExecutionError {
+    fn from(value: Error) -> Self {
+        Self::IOError(value)
+    }
+}
+
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
     let file = File::open("input/day02.txt")?;
     let reader = BufReader::new(file);
-    let (part_1, part_2) = run(reader, FolderBoth::default());
-    println!("Part 1 => {}", part_1);
-    println!("Part 2 => {}", part_2);
-    let end_time = Instant::now();
-    let duration = end_time.duration_since(start_time);
-    println!("Took {} microseconds to run", duration.as_micros());
-    Ok(())
+    let (part_1, part_2) = run_internal(reader, FolderBoth::default());
+    Ok((Box::new(part_1), Box::new(part_2)))
 }
 
 /// Runs the puzzle over the given buffered reader and uses the provided
 /// "Folder" for the fold step which allows the caller to run part1 logic, part_2
 /// logic, or both (additionally if we wanted to apply some hypothetical other interpretation we could).
-fn run<F: Folder>(reader: impl BufRead, folder: F) -> F::Output {
+fn run_internal<F: Folder>(reader: impl BufRead, folder: F) -> F::Output {
     reader
         .lines()
         .filter_map(|elem| {
@@ -190,7 +195,7 @@ impl<Folder1: Folder, Folder2: Folder> Folder for FolderComposite<Folder1, Folde
 
 #[cfg(test)]
 mod tests {
-    use super::{run, FolderPart1, FolderPart2};
+    use super::*;
 
     #[test]
     fn test_example_part_1() {
@@ -204,7 +209,7 @@ mod tests {
         "#
         .as_bytes();
         const EXPECTED: u32 = 150;
-        let calculated = run(INPUT, FolderPart1::default());
+        let calculated = run_internal(INPUT, FolderPart1::default());
         assert_eq!(calculated, EXPECTED);
     }
 
@@ -220,7 +225,7 @@ mod tests {
         "#
         .as_bytes();
         const EXPECTED: u32 = 900;
-        let calculated = run(INPUT, FolderPart2::default());
+        let calculated = run_internal(INPUT, FolderPart2::default());
         assert_eq!(calculated, EXPECTED);
     }
 }

@@ -9,20 +9,20 @@ In order to install Rustup, you can visit: https://rustup.rs/ and follow the ins
 Cargo will indicate any further dependencies required as you follow the next steps to run the binaries
 
 # Running The Solutions #
-Each day will have its own binary in a file with the same name (located in the src/bin folder). Puzzle specific code will be located entirely in this file, however some code that might be useful in other cases may be factored out into the library file. This file is located at src/lib.rs if you want to look at the helpers, etc.
+Each day will have its own module named after it such as day01, day02, etc.
 
-I'll be downloading the input files for each day also and placing them in the input folder using the same naming convention.
+There will be a single binary that can be run with the number of the day whose solution you'd like to run. This is so that:
 
-In order to run one of the binaries in release mode, you can use the following command at the command line (assuming you're inside the project directory)
+1. The single binary can wrap the functionality to add the printing and timing logic of the run
+2. It's easier to type the command to invoke it
+3. We can then test the logic from a benchmarking suite if we want to in future
 
-```
-cargo run --bin day<day_number> --release
-```
-
-For example to run day 2, we can do
+To run a specific day, just type the number after the "cargo run" command. This is **not** padded with 0's so the following are valid examples:
 
 ```
-cargo run --bin day02 --release
+cargo run 1
+cargo run 9
+cargo run 12
 ```
 
 # Benchmarks #

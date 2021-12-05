@@ -1,3 +1,8 @@
+pub mod day01;
+pub mod day02;
+pub mod day03;
+pub mod day04;
+
 use std::{
     ops::{Add, Shl},
     str::FromStr,
@@ -114,7 +119,7 @@ where
 
 /// Extension trait which allows us to call filter_map_group on any iterator and produce a decorated iterator that
 /// performs the filter, group, and map functionality.
-trait FilterGroupMapExt<T, I, F1, F2> {
+pub trait FilterGroupMapExt<T, I, F1, F2> {
     fn filter_group_map(
         self,
         filter_function: F1,

@@ -1,26 +1,33 @@
-use aoc_2021::MapWindowsExt;
+use crate::MapWindowsExt;
 use std::{
+    fmt::Display,
     fs::File,
-    io::{BufRead, BufReader, Result, Seek},
-    time::Instant,
+    io::{BufRead, BufReader, Error, Seek},
 };
 
-fn main() -> Result<()> {
-    let start_time = Instant::now();
+#[derive(Debug)]
+pub enum ExecutionError {
+    IOError(Error),
+}
+
+impl From<Error> for ExecutionError {
+    fn from(value: Error) -> Self {
+        Self::IOError(value)
+    }
+}
+
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
     let file = File::open("input/day01.txt")?;
     let mut reader = BufReader::new(file);
-    println!("Part 1 => {}", run(&mut reader, 1));
+    let part_1 = run_internal(&mut reader, 1);
     reader.rewind()?;
-    println!("Part 2 => {}", run(&mut reader, 3));
-    let end_time = Instant::now();
-    let duration = end_time.duration_since(start_time);
-    println!("Took {} microseconds to run", duration.as_micros());
-    Ok(())
+    let part_2 = run_internal(&mut reader, 3);
+    Ok((Box::new(part_1), Box::new(part_2)))
 }
 
 /// Processes the input to count how many depth increases there are in the sums
 /// of a given sliding window size (part 1 = 1, part 2 = 3).
-fn run(reader: impl BufRead, window_size: usize) -> u32 {
+fn run_internal(reader: impl BufRead, window_size: usize) -> u32 {
     reader
         .lines() // iterator over the lines of the reader
         .filter_map(|elem| {
@@ -35,7 +42,7 @@ fn run(reader: impl BufRead, window_size: usize) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use super::run;
+    use super::*;
 
     #[test]
     fn test_example_part_1() {
@@ -53,7 +60,7 @@ mod tests {
         "#
         .as_bytes();
         const EXPECTED: u32 = 7;
-        let calculated = run(INPUT, 1);
+        let calculated = run_internal(INPUT, 1);
         assert_eq!(calculated, EXPECTED);
     }
 
@@ -73,7 +80,7 @@ mod tests {
             "#
         .as_bytes();
         const EXPECTED: u32 = 5;
-        let calculated = run(INPUT, 3);
+        let calculated = run_internal(INPUT, 3);
         assert_eq!(calculated, EXPECTED);
     }
 }
