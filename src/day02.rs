@@ -1,5 +1,6 @@
 use std::{
-    fmt::Display,
+    error, fmt,
+    fmt::{Display, Formatter},
     fs::File,
     io::{BufRead, BufReader, Error},
     str::FromStr,
@@ -10,13 +11,23 @@ pub enum ExecutionError {
     IOError(Error),
 }
 
-impl From<Error> for ExecutionError {
+impl From<Error> for Box<ExecutionError> {
     fn from(value: Error) -> Self {
-        Self::IOError(value)
+        Self::new(ExecutionError::IOError(value))
     }
 }
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
+impl error::Error for ExecutionError {}
+
+impl Display for ExecutionError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Self::IOError(value) => write!(f, "ExecutionError::IOError({})", value),
+        }
+    }
+}
+
+pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
     let file = File::open("input/day02.txt")?;
     let reader = BufReader::new(file);
     let (part_1, part_2) = run_internal(reader, FolderBoth::default());

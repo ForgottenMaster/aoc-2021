@@ -1,7 +1,8 @@
 use {
     crate::common::binary::{ParseBinaryStringError, ParsedBinaryString},
     std::{
-        fmt::Display,
+        error, fmt,
+        fmt::{Display, Formatter},
         fs::File,
         io::{BufRead, BufReader},
         iter::repeat,
@@ -9,7 +10,7 @@ use {
     },
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
+pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
     let file = File::open("input/day03.txt")?;
     let reader = BufReader::new(file);
     let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.0;
@@ -122,15 +123,28 @@ pub enum ExecutionError {
     ReadDiagnosticReportError(ReadDiagnosticReportError),
 }
 
-impl From<ReadDiagnosticReportError> for ExecutionError {
+impl From<ReadDiagnosticReportError> for Box<ExecutionError> {
     fn from(value: ReadDiagnosticReportError) -> Self {
-        Self::ReadDiagnosticReportError(value)
+        Self::new(ExecutionError::ReadDiagnosticReportError(value))
     }
 }
 
-impl From<std::io::Error> for ExecutionError {
+impl From<std::io::Error> for Box<ExecutionError> {
     fn from(value: std::io::Error) -> Self {
-        Self::IOError(value)
+        Self::new(ExecutionError::IOError(value))
+    }
+}
+
+impl error::Error for ExecutionError {}
+
+impl Display for ExecutionError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Self::IOError(value) => write!(f, "ExecutionError::IOError({})", value),
+            Self::ReadDiagnosticReportError(value) => {
+                write!(f, "ReadDiagnosticReportError({})", value)
+            }
+        }
     }
 }
 
@@ -171,6 +185,25 @@ pub enum ReadDiagnosticReportError {
     ParseBinaryStringError(ParseBinaryStringError),
     InvalidLineLength { line_num: usize, expected: usize },
 }
+
+impl Display for ReadDiagnosticReportError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Self::ParseBinaryStringError(value) => write!(
+                f,
+                "ReadDiagnosticReportError::ParseBinaryStringError({})",
+                value
+            ),
+            Self::InvalidLineLength { line_num, expected } => write!(
+                f,
+                "ReadDiagnosticReportError::InvalidLineLength {{ line_num: {}, expected: {} }}",
+                line_num, expected
+            ),
+        }
+    }
+}
+
+impl error::Error for ReadDiagnosticReportError {}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 

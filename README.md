@@ -20,9 +20,9 @@ There will be a single binary that can be run with the number of the day whose s
 To run a specific day, just type the number after the "cargo run" command. This is **not** padded with 0's so the following are valid examples:
 
 ```
-cargo run 1
-cargo run 9
-cargo run 12
+cargo run --release 1
+cargo run --release 9
+cargo run --release 12
 ```
 
 # Benchmarks #

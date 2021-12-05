@@ -1,6 +1,7 @@
 use crate::common::iter::MapWindowsExt;
 use std::{
-    fmt::Display,
+    error, fmt,
+    fmt::{Display, Formatter},
     fs::File,
     io::{BufRead, BufReader, Error, Seek},
 };
@@ -16,7 +17,23 @@ impl From<Error> for ExecutionError {
     }
 }
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
+impl From<Error> for Box<ExecutionError> {
+    fn from(value: Error) -> Self {
+        Self::new(ExecutionError::IOError(value))
+    }
+}
+
+impl error::Error for ExecutionError {}
+
+impl Display for ExecutionError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Self::IOError(value) => write!(f, "ExecutionError::IOError({})", value),
+        }
+    }
+}
+
+pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
     let file = File::open("input/day01.txt")?;
     let mut reader = BufReader::new(file);
     let part_1 = run_internal(&mut reader, 1);

@@ -1,6 +1,6 @@
 use {
     aoc_2021::*,
-    std::{env::args, time::Instant},
+    std::{env::args, error::Error, time::Instant},
 };
 
 /// An enum containing the types of error we could encounter
@@ -9,26 +9,12 @@ use {
 #[derive(Debug)]
 enum ExecutionError {
     InvalidArgument,
-    Day01Error(day01::ExecutionError),
-    Day02Error(day02::ExecutionError),
-    Day03Error(day03::ExecutionError),
+    ExecutionError(Box<dyn Error>),
 }
 
-impl From<day01::ExecutionError> for ExecutionError {
-    fn from(value: day01::ExecutionError) -> Self {
-        Self::Day01Error(value)
-    }
-}
-
-impl From<day02::ExecutionError> for ExecutionError {
-    fn from(value: day02::ExecutionError) -> Self {
-        Self::Day02Error(value)
-    }
-}
-
-impl From<day03::ExecutionError> for ExecutionError {
-    fn from(value: day03::ExecutionError) -> Self {
-        Self::Day03Error(value)
+impl From<Box<dyn Error>> for ExecutionError {
+    fn from(value: Box<dyn Error>) -> Self {
+        Self::ExecutionError(value)
     }
 }
 
@@ -41,9 +27,10 @@ fn main() -> Result<(), ExecutionError> {
             "3" => day03::run()?,
             _ => return Err(ExecutionError::InvalidArgument),
         };
+        let elapsed = start_time.elapsed().as_micros();
         println!("Part 1 => {}", part_1);
         println!("Part 2 => {}", part_2);
-        println!("Took {} microseconds", start_time.elapsed().as_micros());
+        println!("Took {} microseconds", elapsed);
         Ok(())
     } else {
         Err(ExecutionError::InvalidArgument)
