@@ -34,7 +34,7 @@ pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), ExecutionError> {
 // Put into a module to respect privacy rules
 mod implementation {
     use {
-        crate::FilterGroupMapExt,
+        crate::common::iter::FilterGroupMapExt,
         std::{io::BufRead, num::ParseIntError, str::FromStr},
     };
 

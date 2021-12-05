@@ -1,5 +1,5 @@
 use {
-    crate::{ParseBinaryStringError, ParsedBinaryString},
+    crate::common::binary::{ParseBinaryStringError, ParsedBinaryString},
     std::{
         fmt::Display,
         fs::File,

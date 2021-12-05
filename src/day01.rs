@@ -1,4 +1,4 @@
-use crate::MapWindowsExt;
+use crate::common::iter::MapWindowsExt;
 use std::{
     fmt::Display,
     fs::File,
