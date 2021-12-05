@@ -65,6 +65,81 @@ where
     }
 }
 
+/// Iterator adapter which takes a predicate and filters out those elements that fail
+/// but also uses these as a separator for groups. pushes each element that is part of a group
+/// into an internal buffer and whenever a separator (element failing the grouping predicate) is encountered
+/// will invoke the mapping function with the slice that has accumulated. The mapping function can then do whatever
+/// it needs to with the group. We use a mapping function that takes the slice rather than yielding owned vectors as
+/// there may be no need to persist the group. If there is then the mapping function can go ahead and do so.
+pub struct FilterGroupMap<T, I, F1, F2> {
+    group: Vec<T>,
+    iterator: I,
+    filter_function: F1,
+    map_function: F2,
+}
+
+/// Iterator implementation for FilterGroupMap. Will yield the result of applying the map function to the groups
+/// determined by the filter_function.
+impl<I, F1, F2, U> Iterator for FilterGroupMap<I::Item, I, F1, F2>
+where
+    I: Iterator,
+    F1: Fn(&I::Item) -> bool,
+    F2: Fn(&[I::Item]) -> U,
+{
+    type Item = U;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Loop, accumulating all elements that pass the group filtering
+        // function and if we hit a failing element, pass the group to the map function.
+        loop {
+            if let Some(elem) = self.iterator.next() {
+                if (self.filter_function)(&elem) {
+                    self.group.push(elem);
+                } else if !self.group.is_empty() {
+                    let result = (self.map_function)(&self.group);
+                    self.group.clear();
+                    break Some(result);
+                }
+            } else if !self.group.is_empty() {
+                break Some((self.map_function)(&self.group));
+            } else {
+                break None;
+            }
+        }
+    }
+}
+
+/// Extension trait which allows us to call filter_map_group on any iterator and produce a decorated iterator that
+/// performs the filter, group, and map functionality.
+trait FilterGroupMapExt<T, I, F1, F2> {
+    fn filter_group_map(
+        self,
+        filter_function: F1,
+        map_function: F2,
+    ) -> FilterGroupMap<T, I, F1, F2>;
+}
+
+/// Blanket implementation of FilterGroupMapExt for all compatible iterators.
+impl<I, F1, F2, U> FilterGroupMapExt<I::Item, I, F1, F2> for I
+where
+    I: Iterator,
+    F1: Fn(&I::Item) -> bool,
+    F2: Fn(&[I::Item]) -> U,
+{
+    fn filter_group_map(
+        self,
+        filter_function: F1,
+        map_function: F2,
+    ) -> FilterGroupMap<<Self as Iterator>::Item, Self, F1, F2> {
+        FilterGroupMap {
+            filter_function,
+            map_function,
+            group: vec![],
+            iterator: self,
+        }
+    }
+}
+
 /// Struct which wraps some type which has been parsed from a binary string and allows unwrapping of
 /// the value.
 #[derive(Debug, PartialEq)]
@@ -188,5 +263,56 @@ mod tests {
         };
         let calculated = INPUT.parse::<ParsedBinaryString<u32>>().unwrap();
         assert_eq!(calculated, expected);
+    }
+
+    #[test]
+    fn test_filter_group_empty() {
+        const INPUT: &str = r#"
+        
+
+
+        "#;
+        let mut iter = INPUT
+            .lines()
+            .filter_group_map(|line| !line.trim().is_empty(), |group| group.to_owned());
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn test_filter_group_single_group_multi_line() {
+        const INPUT: &str = r#"
+        line 1
+        line 2
+        "#;
+        let mut iter = INPUT
+            .lines()
+            .map(|line| line.trim())
+            .filter_group_map(|line| !line.trim().is_empty(), |group| group.to_owned());
+        assert_eq!(iter.next().unwrap(), vec!["line 1", "line 2"]);
+    }
+
+    #[test]
+    fn test_filter_group_multi_group() {
+        const INPUT: &str = r#"
+        line 1
+
+        line 1
+        line 2
+
+
+        line 1
+
+        line 1
+        line 2
+        line 3
+        "#;
+        let mut iter = INPUT
+            .lines()
+            .map(|line| line.trim())
+            .filter_group_map(|line| !line.trim().is_empty(), |group| group.to_owned());
+        assert_eq!(iter.next().unwrap(), vec!["line 1"]);
+        assert_eq!(iter.next().unwrap(), vec!["line 1", "line 2"]);
+        assert_eq!(iter.next().unwrap(), vec!["line 1"]);
+        assert_eq!(iter.next().unwrap(), vec!["line 1", "line 2", "line 3"]);
     }
 }
