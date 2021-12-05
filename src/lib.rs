@@ -89,19 +89,22 @@ where
     type Item = U;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Loop, accumulating all elements that pass the group filtering
-        // function and if we hit a failing element, pass the group to the map function.
+        let mut emit_group = false;
         loop {
+            if emit_group {
+                let result = (self.map_function)(&self.group);
+                self.group.clear();
+                break Some(result);
+            }
+
             if let Some(elem) = self.iterator.next() {
                 if (self.filter_function)(&elem) {
                     self.group.push(elem);
                 } else if !self.group.is_empty() {
-                    let result = (self.map_function)(&self.group);
-                    self.group.clear();
-                    break Some(result);
+                    emit_group = true;
                 }
             } else if !self.group.is_empty() {
-                break Some((self.map_function)(&self.group));
+                emit_group = true;
             } else {
                 break None;
             }
