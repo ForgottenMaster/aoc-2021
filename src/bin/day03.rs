@@ -142,7 +142,7 @@ enum SolutionError {
 #[derive(Debug, PartialEq)]
 struct DiagnosticReport<T>(Vec<ParsedBinaryString<T>>);
 
-impl<T: Add<T, Output = T> + Default + From<bool> + Shl<u8, Output = T>> DiagnosticReport<T> {
+impl<T: Add<T, Output = T> + From<bool> + Shl<u8, Output = T>> DiagnosticReport<T> {
     fn new_from_bufread(reader: impl BufRead) -> Result<Self, ReadDiagnosticReportError> {
         let mut lines = Vec::new();
         let mut line_len = 0;
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn test_read_diagnostic_report_success() {
-        let INPUT: &[u8] = r#"
+        const INPUT: &[u8] = r#"
         
             01 00 1
         101 00

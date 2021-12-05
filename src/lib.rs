@@ -83,9 +83,7 @@ impl<T> ParsedBinaryString<T> {
     }
 }
 
-impl<T: Default + From<bool> + Shl<u8, Output = T> + Add<T, Output = T>> FromStr
-    for ParsedBinaryString<T>
-{
+impl<T: From<bool> + Shl<u8, Output = T> + Add<T, Output = T>> FromStr for ParsedBinaryString<T> {
     type Err = ParseBinaryStringError;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
