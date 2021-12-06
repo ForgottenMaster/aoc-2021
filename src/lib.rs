@@ -3,6 +3,7 @@ mod day01;
 mod day02;
 mod day03;
 mod day04;
+mod day05;
 
 use std::{error::Error, fmt::Display, io, io::ErrorKind};
 
@@ -12,6 +13,7 @@ pub fn run(day: usize) -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn E
         2 => day02::run()?,
         3 => day03::run()?,
         4 => day04::run()?,
+        5 => day05::run()?,
         _ => {
             return Err(Box::new(io::Error::new(
                 ErrorKind::InvalidInput,
