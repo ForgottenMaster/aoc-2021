@@ -1,50 +1,26 @@
-use crate::common::iter::MapWindowsExt;
-use std::{
-    error, fmt,
-    fmt::{Display, Formatter},
-    fs::File,
-    io::{BufRead, BufReader, Error, Seek},
+use {
+    crate::common::iter::MapWindowsExt,
+    std::{
+        error::Error,
+        {
+            fs::File,
+            io::{BufRead, BufReader, Seek},
+        },
+    },
 };
 
-#[derive(Debug)]
-pub enum ExecutionError {
-    IOError(Error),
-}
-
-impl From<Error> for ExecutionError {
-    fn from(value: Error) -> Self {
-        Self::IOError(value)
-    }
-}
-
-impl From<Error> for Box<ExecutionError> {
-    fn from(value: Error) -> Self {
-        Self::new(ExecutionError::IOError(value))
-    }
-}
-
-impl error::Error for ExecutionError {}
-
-impl Display for ExecutionError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Self::IOError(value) => write!(f, "ExecutionError::IOError({})", value),
-        }
-    }
-}
-
-pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
+pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn Error>> {
     let file = File::open("input/day01.txt")?;
     let mut reader = BufReader::new(file);
-    let part_1 = run_internal(&mut reader, 1);
+    let part_1 = calculate_number_of_increases(&mut reader, 1);
     reader.rewind()?;
-    let part_2 = run_internal(&mut reader, 3);
+    let part_2 = calculate_number_of_increases(&mut reader, 3);
     Ok((Box::new(part_1), Box::new(part_2)))
 }
 
 /// Processes the input to count how many depth increases there are in the sums
 /// of a given sliding window size (part 1 = 1, part 2 = 3).
-fn run_internal(reader: impl BufRead, window_size: usize) -> u32 {
+fn calculate_number_of_increases(reader: impl BufRead, window_size: usize) -> u32 {
     reader
         .lines() // iterator over the lines of the reader
         .filter_map(|elem| {
@@ -77,7 +53,7 @@ mod tests {
         "#
         .as_bytes();
         const EXPECTED: u32 = 7;
-        let calculated = run_internal(INPUT, 1);
+        let calculated = calculate_number_of_increases(INPUT, 1);
         assert_eq!(calculated, EXPECTED);
     }
 
@@ -97,7 +73,7 @@ mod tests {
             "#
         .as_bytes();
         const EXPECTED: u32 = 5;
-        let calculated = run_internal(INPUT, 3);
+        let calculated = calculate_number_of_increases(INPUT, 3);
         assert_eq!(calculated, EXPECTED);
     }
 }
