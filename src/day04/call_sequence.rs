@@ -1,7 +1,7 @@
 use {super::parse_call_sequence_error::ParseCallSequenceError, std::str::FromStr};
 
 /// Struct that represents the call sequence for the bingo game.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CallSequence(Vec<u32>);
 
 impl FromStr for CallSequence {

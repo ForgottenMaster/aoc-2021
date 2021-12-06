@@ -8,7 +8,7 @@ use {
 };
 
 /// Struct representing the entire game of bingo.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BingoGame(CallSequence, Vec<BingoBoard>);
 
 impl BingoGame {
@@ -40,7 +40,10 @@ impl BingoGame {
         }
     }
 
-    fn find_first_winning_board(&mut self) -> Option<(&BingoBoard, u32)> {
+    fn find_winning_board(
+        &mut self,
+        modify_key_func: impl Fn(u32) -> u32,
+    ) -> Option<(&BingoBoard, u32)> {
         (&mut self.1)
             .into_iter()
             .map(|board| (board.run_call_sequence(&self.0), board))
@@ -51,7 +54,7 @@ impl BingoGame {
                     None
                 }
             })
-            .min_by_key(|(number, _)| *number)
+            .min_by_key(|(number, _)| modify_key_func(*number))
             .map(|(number, board)| {
                 (
                     &*board,
@@ -60,10 +63,19 @@ impl BingoGame {
             })
     }
 
-    pub fn calculate_part_1_answer(&mut self) -> u32 {
-        let (board, called_number) = self.find_first_winning_board().unwrap();
+    fn calculate_answer(&mut self, modify_key_func: impl Fn(u32) -> u32) -> u32 {
+        let (board, called_number) = self.find_winning_board(modify_key_func).unwrap();
         let remaining_sum = board.sum_unmarked();
         remaining_sum * called_number
+    }
+
+    pub fn calculate_part_1_answer(&mut self) -> u32 {
+        self.calculate_answer(|num| num)
+    }
+
+    pub fn calculate_part_2_answer(&mut self) -> u32 {
+        let number_count = self.0.into_iter().count() as u32;
+        self.calculate_answer(|num| number_count - num)
     }
 }
 
@@ -139,7 +151,7 @@ mod tests {
         "#
         .as_bytes();
         let mut game = BingoGame::new_from_bufread(INPUT).unwrap();
-        assert!(game.find_first_winning_board().is_none());
+        assert!(game.find_winning_board(|num| num).is_none());
     }
 
     #[test]
@@ -171,6 +183,6 @@ mod tests {
             _ => false,
         });
 
-        assert_eq!(game.find_first_winning_board().unwrap(), (&board, 11));
+        assert_eq!(game.find_winning_board(|num| num).unwrap(), (&board, 11));
     }
 }

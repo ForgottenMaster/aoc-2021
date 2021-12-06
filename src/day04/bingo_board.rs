@@ -7,7 +7,7 @@ use {
 };
 
 /// Struct that represents a bingo board in the bingo game.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BingoBoard(Vec<BingoBoardRow>);
 
 impl BingoBoard {

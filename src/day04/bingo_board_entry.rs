@@ -1,5 +1,5 @@
 /// Struct defining a single entry in the bingo board.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BingoBoardEntry {
     value: u32,
     is_marked: bool,
