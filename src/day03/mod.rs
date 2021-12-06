@@ -3,10 +3,10 @@ mod read_diagnostic_report_error;
 
 use {
     diagnostic_report::DiagnosticReport,
-    std::{error, fs::File, io::BufReader, iter::repeat},
+    std::{error, fmt::Display, fs::File, io::BufReader, iter::repeat},
 };
 
-pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn error::Error>> {
     let file = File::open("input/day03.txt")?;
     let reader = BufReader::new(file);
     let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.unwrap();

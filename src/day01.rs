@@ -3,13 +3,14 @@ use {
     std::{
         error::Error,
         {
+            fmt::Display,
             fs::File,
             io::{BufRead, BufReader, Seek},
         },
     },
 };
 
-pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn Error>> {
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
     let file = File::open("input/day01.txt")?;
     let mut reader = BufReader::new(file);
     let part_1 = calculate_number_of_increases(&mut reader, 1);

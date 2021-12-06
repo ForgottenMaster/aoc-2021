@@ -13,12 +13,13 @@ use {
     folder_part_2::FolderPart2,
     std::{
         error::Error,
+        fmt::Display,
         fs::File,
         io::{BufRead, BufReader},
     },
 };
 
-pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn Error>> {
+pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
     let file = File::open("input/day02.txt")?;
     let reader = BufReader::new(file);
     let (part_1, part_2) = calculate_distance_travelled(reader, FolderBoth::default());
