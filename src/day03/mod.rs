@@ -1,19 +1,15 @@
+mod diagnostic_report;
+mod read_diagnostic_report_error;
+
 use {
-    crate::common::binary::{ParseBinaryStringError, ParsedBinaryString},
-    std::{
-        error, fmt,
-        fmt::{Display, Formatter},
-        fs::File,
-        io::{BufRead, BufReader},
-        iter::repeat,
-        ops::{Add, Shl},
-    },
+    diagnostic_report::DiagnosticReport,
+    std::{error, fs::File, io::BufReader, iter::repeat},
 };
 
 pub fn run() -> Result<(Box<u32>, Box<u32>), Box<dyn error::Error>> {
     let file = File::open("input/day03.txt")?;
     let reader = BufReader::new(file);
-    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.0;
+    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.unwrap();
     let bit_count = if diagnostic_report.len() > 0 {
         diagnostic_report[0].input_string_bit_count()
     } else {
@@ -115,149 +111,9 @@ fn extract_epsilon_rate(report: &[(u32, u32)]) -> u32 {
         .sum()
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug)]
-pub enum ExecutionError {
-    IOError(std::io::Error),
-    ReadDiagnosticReportError(ReadDiagnosticReportError),
-}
-
-impl From<ReadDiagnosticReportError> for Box<ExecutionError> {
-    fn from(value: ReadDiagnosticReportError) -> Self {
-        Self::new(ExecutionError::ReadDiagnosticReportError(value))
-    }
-}
-
-impl From<std::io::Error> for Box<ExecutionError> {
-    fn from(value: std::io::Error) -> Self {
-        Self::new(ExecutionError::IOError(value))
-    }
-}
-
-impl error::Error for ExecutionError {}
-
-impl Display for ExecutionError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Self::IOError(value) => write!(f, "ExecutionError::IOError({})", value),
-            Self::ReadDiagnosticReportError(value) => {
-                write!(f, "ReadDiagnosticReportError({})", value)
-            }
-        }
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, PartialEq)]
-struct DiagnosticReport<T>(Vec<ParsedBinaryString<T>>);
-
-impl<T: Add<T, Output = T> + From<bool> + Shl<u8, Output = T>> DiagnosticReport<T> {
-    fn new_from_bufread(reader: impl BufRead) -> Result<Self, ReadDiagnosticReportError> {
-        let mut lines = Vec::new();
-        let mut line_len = 0;
-
-        for (line_num, line) in reader.lines().filter_map(|line| line.ok()).enumerate() {
-            match line.parse::<ParsedBinaryString<T>>() {
-                Err(ParseBinaryStringError::EmptyString) => continue,
-                Err(err) => return Err(ReadDiagnosticReportError::ParseBinaryStringError(err)),
-                Ok(parsed) => {
-                    if line_len != 0 && line_len != parsed.input_string_bit_count() {
-                        return Err(ReadDiagnosticReportError::InvalidLineLength {
-                            line_num,
-                            expected: line_len,
-                        });
-                    } else {
-                        line_len = parsed.input_string_bit_count();
-                        lines.push(parsed);
-                    }
-                }
-            }
-        }
-
-        Ok(Self(lines))
-    }
-}
-
-#[derive(Debug)]
-pub enum ReadDiagnosticReportError {
-    ParseBinaryStringError(ParseBinaryStringError),
-    InvalidLineLength { line_num: usize, expected: usize },
-}
-
-impl Display for ReadDiagnosticReportError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Self::ParseBinaryStringError(value) => write!(
-                f,
-                "ReadDiagnosticReportError::ParseBinaryStringError({})",
-                value
-            ),
-            Self::InvalidLineLength { line_num, expected } => write!(
-                f,
-                "ReadDiagnosticReportError::InvalidLineLength {{ line_num: {}, expected: {} }}",
-                line_num, expected
-            ),
-        }
-    }
-}
-
-impl error::Error for ReadDiagnosticReportError {}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_read_diagnostic_report_parse_binary_string_error() {
-        assert!(
-            match DiagnosticReport::<u32>::new_from_bufread("011o1".as_bytes()) {
-                Err(ReadDiagnosticReportError::ParseBinaryStringError(_)) => true,
-                _ => false,
-            }
-        );
-    }
-
-    #[test]
-    fn test_read_diagnostic_report_invalid_line_length() {
-        assert!(match DiagnosticReport::<u32>::new_from_bufread(
-            r#"
-        
-        10010
-        001
-
-        "#
-            .as_bytes()
-        ) {
-            Err(ReadDiagnosticReportError::InvalidLineLength {
-                line_num: 3,
-                expected: 5,
-            }) => true,
-            _ => false,
-        })
-    }
-
-    #[test]
-    fn test_read_diagnostic_report_success() {
-        const INPUT: &[u8] = r#"
-        
-            01 00 1
-        101 00
-
-                0101     1
-        "#
-        .as_bytes();
-        let expected = DiagnosticReport(vec![
-            "01001".parse().unwrap(),
-            "10100".parse().unwrap(),
-            "01011".parse().unwrap(),
-        ]);
-        let calculated = DiagnosticReport::<u32>::new_from_bufread(INPUT).unwrap();
-        assert_eq!(calculated, expected);
-    }
 
     #[test]
     fn test_calculate_bit_counts() {
