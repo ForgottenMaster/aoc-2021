@@ -27,6 +27,15 @@ impl FromStr for CallSequence {
     }
 }
 
+impl<'a> IntoIterator for &'a CallSequence {
+    type Item = &'a u32;
+    type IntoIter = <&'a Vec<u32> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        (&self.0).into_iter()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -39,6 +39,32 @@ impl BingoGame {
             Err(ReadBingoGameError::InsufficientGroups)
         }
     }
+
+    fn find_first_winning_board(&mut self) -> Option<(&BingoBoard, u32)> {
+        (&mut self.1)
+            .into_iter()
+            .map(|board| (board.run_call_sequence(&self.0), board))
+            .filter_map(|(number, board)| {
+                if number.is_some() {
+                    Some((number.unwrap(), board))
+                } else {
+                    None
+                }
+            })
+            .min_by_key(|(number, _)| *number)
+            .map(|(number, board)| {
+                (
+                    &*board,
+                    *self.0.into_iter().skip(number as usize - 1).next().unwrap(),
+                )
+            })
+    }
+
+    pub fn calculate_part_1_answer(&mut self) -> u32 {
+        let (board, called_number) = self.find_first_winning_board().unwrap();
+        let remaining_sum = board.sum_unmarked();
+        remaining_sum * called_number
+    }
 }
 
 #[cfg(test)]
@@ -98,5 +124,53 @@ mod tests {
         "#
         .as_bytes();
         BingoGame::new_from_bufread(INPUT).unwrap();
+    }
+
+    #[test]
+    fn test_bingo_game_find_first_winning_board_unsuccessful() {
+        const INPUT: &[u8] = r#"
+        1, 5, 8, 12, 3
+        
+        1 2 3
+        4 5 6
+        
+        7 8 9
+        10 11 12
+        "#
+        .as_bytes();
+        let mut game = BingoGame::new_from_bufread(INPUT).unwrap();
+        assert!(game.find_first_winning_board().is_none());
+    }
+
+    #[test]
+    fn test_bingo_game_find_first_winning_board_successful() {
+        const INPUT: &[u8] = r#"
+        1, 5, 8, 12, 3, 11
+        
+        1 2 3
+        4 5 6
+        
+        7 8 9
+        10 11 12
+        "#
+        .as_bytes();
+
+        let mut game = BingoGame::new_from_bufread(INPUT).unwrap();
+
+        let mut board = r#"
+        7 8 9
+        10 11 12
+        "#
+        .parse::<BingoBoard>()
+        .unwrap();
+
+        let sequence = "1, 5, 8, 12, 3, 11".parse::<CallSequence>().unwrap();
+
+        assert!(match board.run_call_sequence(&sequence) {
+            Some(6) => true,
+            _ => false,
+        });
+
+        assert_eq!(game.find_first_winning_board().unwrap(), (&board, 11));
     }
 }
