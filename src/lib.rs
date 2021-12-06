@@ -1,4 +1,4 @@
-pub mod common;
+mod common;
 pub mod day01;
 pub mod day02;
 pub mod day03;
