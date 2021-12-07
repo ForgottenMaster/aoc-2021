@@ -86,22 +86,28 @@ mod tests {
             expected_counts.iter().map(|(_, value)| value).sum()
         );
     }
-    
+
     #[test]
     fn test_example_part_1() {
         const INPUT: &[u8] = "3,4,3,1,2".as_bytes();
         const EXPECTED: u128 = 5934;
         let mut fish_counts = read_lanternfish_counts(INPUT).unwrap();
         simulate_days(&mut fish_counts, 80);
-        assert_eq!(fish_counts.iter().map(|(_, value)| value).sum::<u128>(), EXPECTED);
+        assert_eq!(
+            fish_counts.iter().map(|(_, value)| value).sum::<u128>(),
+            EXPECTED
+        );
     }
-    
+
     #[test]
     fn test_example_part_2() {
         const INPUT: &[u8] = "3,4,3,1,2".as_bytes();
         const EXPECTED: u128 = 26984457539;
         let mut fish_counts = read_lanternfish_counts(INPUT).unwrap();
         simulate_days(&mut fish_counts, 256);
-        assert_eq!(fish_counts.iter().map(|(_, value)| value).sum::<u128>(), EXPECTED);
+        assert_eq!(
+            fish_counts.iter().map(|(_, value)| value).sum::<u128>(),
+            EXPECTED
+        );
     }
 }
