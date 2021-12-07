@@ -5,9 +5,9 @@ use {
 
 /// Struct holding a pair of points indicating the two end points of a line
 #[derive(Debug, PartialEq)]
-struct Line(Point, Point);
+pub struct LineSegment(Point, Point);
 
-impl FromStr for Line {
+impl FromStr for LineSegment {
     type Err = ParseLineError;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
@@ -31,39 +31,56 @@ impl FromStr for Line {
     }
 }
 
+impl From<&LineSegment> for (Point, Point) {
+    fn from(value: &LineSegment) -> Self {
+        (value.0.clone(), value.1.clone())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::super::delta::Delta;
     use super::*;
 
     #[test]
-    fn test_line_from_str_parse_point_error() {
-        assert!(match "2i -> 29".parse::<Line>() {
+    fn test_line_segment_from_str_parse_point_error() {
+        assert!(match "2i -> 29".parse::<LineSegment>() {
             Err(ParseLineError::ParsePointError(_)) => true,
             _ => false,
         });
     }
 
     #[test]
-    fn test_line_from_str_not_enough_parts() {
-        assert!(match "21,82".parse::<Line>() {
+    fn test_line_segment_from_str_not_enough_parts() {
+        assert!(match "21,82".parse::<LineSegment>() {
             Err(ParseLineError::NotEnoughParts) => true,
             _ => false,
         });
     }
 
     #[test]
-    fn test_line_from_str_too_many_parts() {
-        assert!(match "21,82 -> 24,17 -> 74,19".parse::<Line>() {
+    fn test_line_segment_from_str_too_many_parts() {
+        assert!(match "21,82 -> 24,17 -> 74,19".parse::<LineSegment>() {
             Err(ParseLineError::TooManyParts) => true,
             _ => false,
         });
     }
 
     #[test]
-    fn test_line_from_str_success() {
+    fn test_line_segment_from_str_success() {
         assert_eq!(
-            "21,82 -> 24,17".parse::<Line>().unwrap(),
-            Line("21,82".parse().unwrap(), "24,17".parse().unwrap())
+            "21,82 -> 24,17".parse::<LineSegment>().unwrap(),
+            LineSegment("21,82".parse().unwrap(), "24,17".parse().unwrap())
         );
+    }
+
+    #[test]
+    fn test_line_segment_delta() {
+        let line_segment = "25,13 -> 92,3".parse::<LineSegment>().unwrap();
+        let point_1 = "25,13".parse::<Point>().unwrap();
+        let point_2 = "92,3".parse::<Point>().unwrap();
+        let expected = &point_2 - &point_1;
+        let calculated: Delta = (&line_segment).into();
+        assert_eq!(expected, calculated);
     }
 }

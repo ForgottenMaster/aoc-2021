@@ -1,8 +1,14 @@
-use {super::parse_point_error::ParsePointError, std::str::FromStr};
+use {
+    super::{delta::Delta, parse_point_error::ParsePointError},
+    std::{
+        ops::{AddAssign, Sub},
+        str::FromStr,
+    },
+};
 
 /// structure that holds an x and y coordinate
 /// representing an individual point.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Point(u32, u32);
 
 impl FromStr for Point {
@@ -24,6 +30,31 @@ impl FromStr for Point {
         } else {
             Err(ParsePointError::NotEnoughParts)
         }
+    }
+}
+
+impl AddAssign<&Delta> for Point {
+    fn add_assign(&mut self, rhs: &Delta) {
+        let (dx, dy): (i64, i64) = rhs.into();
+        self.0 = (self.0 as i64 + dx) as u32;
+        self.1 = (self.1 as i64 + dy) as u32;
+    }
+}
+
+impl From<&Point> for (u32, u32) {
+    fn from(value: &Point) -> Self {
+        (value.0, value.1)
+    }
+}
+
+impl Sub<&Point> for &Point {
+    type Output = Delta;
+
+    fn sub(self, rhs: &Point) -> Delta {
+        let (p1x, p1y): (u32, u32) = self.into();
+        let (p2x, p2y): (u32, u32) = rhs.into();
+        let delta = (p1x as i64 - p2x as i64, p1y as i64 - p2y as i64);
+        delta.into()
     }
 }
 
@@ -58,5 +89,12 @@ mod tests {
     #[test]
     fn test_point_from_str_success() {
         assert_eq!("17, 21".parse::<Point>().unwrap(), Point(17, 21));
+    }
+
+    #[test]
+    fn test_point_to_tuple() {
+        let point = "17,21".parse::<Point>().unwrap();
+        let point: (u32, u32) = (&point).into();
+        assert_eq!(point, (17, 21));
     }
 }
