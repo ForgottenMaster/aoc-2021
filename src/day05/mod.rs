@@ -23,9 +23,14 @@ pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
     let file = File::open("input/day05.txt")?;
     let reader = BufReader::new(file);
     let line_segments = load_line_segments(reader);
-    let point_counts = get_point_counts(&line_segments);
-    let part_1 = count_intersections(&point_counts);
-    Ok((Box::new(part_1), Box::new(0)))
+    let part_1 = count_intersections(&get_point_counts(line_segments.iter().filter(
+        |line| match line {
+            ClassifiedLineSegment::Horizontal(_) | ClassifiedLineSegment::Vertical(_) => true,
+            _ => false,
+        },
+    )));
+    let part_2 = count_intersections(&get_point_counts(line_segments.iter()));
+    Ok((Box::new(part_1), Box::new(part_2)))
 }
 
 /// Loads the valid line segments from the given BufRead instance
@@ -41,9 +46,11 @@ fn load_line_segments(reader: impl BufRead) -> Vec<ClassifiedLineSegment> {
 }
 
 /// Creates a HashMap of point to count from a set of classified lines.
-fn get_point_counts(segments: &[ClassifiedLineSegment]) -> HashMap<(u32, u32), u32> {
+fn get_point_counts<'a>(
+    segments: impl Iterator<Item = &'a ClassifiedLineSegment>,
+) -> HashMap<(u32, u32), u32> {
     let mut hm = HashMap::new();
-    segments.into_iter().for_each(|line| {
+    segments.for_each(|line| {
         ClassifiedLineSegmentIter::new(line).for_each(|point| {
             *hm.entry((&point).into()).or_insert(0) += 1;
         });
@@ -77,7 +84,32 @@ mod tests {
         .as_bytes();
         const EXPECTED: usize = 5;
         let segments = load_line_segments(INPUT);
-        let counts = get_point_counts(&segments);
+        let counts = get_point_counts(segments.iter().filter(|line| match line {
+            ClassifiedLineSegment::Horizontal(_) | ClassifiedLineSegment::Vertical(_) => true,
+            _ => false,
+        }));
+        let intersections = count_intersections(&counts);
+        assert_eq!(intersections, EXPECTED);
+    }
+
+    #[test]
+    fn test_part_2_example() {
+        const INPUT: &[u8] = r#"
+        0,9 -> 5,9
+        8,0 -> 0,8
+        9,4 -> 3,4
+        2,2 -> 2,1
+        7,0 -> 7,4
+        6,4 -> 2,0
+        0,9 -> 2,9
+        3,4 -> 1,4
+        0,0 -> 8,8
+        5,5 -> 8,2
+        "#
+        .as_bytes();
+        const EXPECTED: usize = 12;
+        let segments = load_line_segments(INPUT);
+        let counts = get_point_counts(segments.iter());
         let intersections = count_intersections(&counts);
         assert_eq!(intersections, EXPECTED);
     }

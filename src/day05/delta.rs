@@ -1,7 +1,4 @@
-use {
-    super::{line_segment::LineSegment, point::Point},
-    std::ops::Div,
-};
+use super::{line_segment::LineSegment, point::Point};
 
 /// Struct representing the signed delta between two points.
 /// Since the points contain u32 coordinates, we represent the delta with i64 as it's large
@@ -10,16 +7,18 @@ use {
 pub struct Delta(i64, i64);
 
 impl Delta {
-    pub fn len(&self) -> i64 {
-        ((self.0.pow(2) + self.1.pow(2)) as f64).sqrt() as i64
-    }
-}
+    pub fn normalize(&mut self) {
+        if self.0 < 0 {
+            self.0 = -1;
+        } else if self.0 > 0 {
+            self.0 = 1;
+        }
 
-impl Div<i64> for Delta {
-    type Output = Self;
-
-    fn div(self, rhs: i64) -> Self {
-        Self(self.0 / rhs, self.1 / rhs)
+        if self.1 < 0 {
+            self.1 = -1;
+        } else if self.1 > 0 {
+            self.1 = 1;
+        }
     }
 }
 

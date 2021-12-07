@@ -14,9 +14,8 @@ pub struct ClassifiedLineSegmentIter {
 impl ClassifiedLineSegmentIter {
     pub fn new(from: &ClassifiedLineSegment) -> Self {
         let (current, end): (Point, Point) = from.into();
-        let delta = &end - &current;
-        let len = delta.len();
-        let delta = delta / len;
+        let mut delta = &end - &current;
+        delta.normalize();
 
         Self {
             current,
@@ -53,8 +52,8 @@ mod tests {
     #[test]
     fn test_classified_line_segment_iter_horizontal() {
         let line_segment = "14,20 -> 16,20".parse::<LineSegment>().unwrap();
-        let line_segment: Result<ClassifiedLineSegment, ()> = line_segment.try_into();
-        let line_segment = ClassifiedLineSegmentIter::new(&line_segment.unwrap());
+        let line_segment: ClassifiedLineSegment = line_segment.into();
+        let line_segment = ClassifiedLineSegmentIter::new(&line_segment);
         assert_eq!(
             line_segment.collect::<Vec<_>>(),
             vec![
@@ -68,8 +67,8 @@ mod tests {
     #[test]
     fn test_classified_line_segment_iter_horizontal_backward() {
         let line_segment = "16,20 -> 14,20".parse::<LineSegment>().unwrap();
-        let line_segment: Result<ClassifiedLineSegment, ()> = line_segment.try_into();
-        let line_segment = ClassifiedLineSegmentIter::new(&line_segment.unwrap());
+        let line_segment: ClassifiedLineSegment = line_segment.into();
+        let line_segment = ClassifiedLineSegmentIter::new(&line_segment);
         assert_eq!(
             line_segment.collect::<Vec<_>>(),
             vec![
@@ -83,8 +82,8 @@ mod tests {
     #[test]
     fn test_classified_line_segment_iter_vertical() {
         let line_segment = "16,10 -> 16,13".parse::<LineSegment>().unwrap();
-        let line_segment: Result<ClassifiedLineSegment, ()> = line_segment.try_into();
-        let line_segment = ClassifiedLineSegmentIter::new(&line_segment.unwrap());
+        let line_segment: ClassifiedLineSegment = line_segment.into();
+        let line_segment = ClassifiedLineSegmentIter::new(&line_segment);
         assert_eq!(
             line_segment.collect::<Vec<_>>(),
             vec![
@@ -99,8 +98,8 @@ mod tests {
     #[test]
     fn test_classified_line_segment_iter_vertical_backward() {
         let line_segment = "16,13 -> 16,10".parse::<LineSegment>().unwrap();
-        let line_segment: Result<ClassifiedLineSegment, ()> = line_segment.try_into();
-        let line_segment = ClassifiedLineSegmentIter::new(&line_segment.unwrap());
+        let line_segment: ClassifiedLineSegment = line_segment.into();
+        let line_segment = ClassifiedLineSegmentIter::new(&line_segment);
         assert_eq!(
             line_segment.collect::<Vec<_>>(),
             vec![
