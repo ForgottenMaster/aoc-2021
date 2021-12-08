@@ -26,15 +26,24 @@ cargo run --release 12
 ```
 
 # Benchmarks #
-Each solution when run will output, along with the part 1 and 2 answers, a timing of how long it took to complete. This is a crude
-benchmark and isn't as reliable as using a benchmarking crate such as criterion, but gives a general idea of the time it takes.
+Each solution when run will output, along with the part 1 and 2 answers, a timing of how long it took to complete.
 
-Please bear in mind that the timings also include file I/O and not just the algorithm itself.
+For more detailed benchmarking, Criterion is added as a dev-dependency and benchmarking can be run as:
+
+```
+cargo bench
+```
+
+This will run all the benchmarks and can take a while to do so. To run a single solution you can pass the name to bench. For example, to run only day 1's solution:
+
+```
+cargo bench run_day_1
+```
 
 # Dependencies #
-I won't be including any dependencies in the project unless absolutely necessary, for example if a problem
-outputs an image with the answer in it. Any functionality I add on top of the standard library will be hand-written
-by myself.
+I won't be including any crates/libraries in the project for use in solving the solutions. I'll either be using the standard library functionality or rolling my own data structures where there are gaps.
+
+I will however include Criterion as a dev-dependency. This means if you're running the binary/solutions it won't need to install it, but for benchmarking and testing it will install.
 
 # Completed Solutions #
 This table identifies which solutions have been completed and which are still yet to be done. Ideally these will get checked off at a rate of 2 per day to keep upto speed with release.
