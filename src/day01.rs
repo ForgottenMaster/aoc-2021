@@ -1,9 +1,9 @@
 use {
     crate::common::iter::MapWindowsExt,
     std::{
-            fmt::Display,
-            fs::File,
-            io::{BufRead, BufReader, Seek},
+        fmt::Display,
+        fs::File,
+        io::{BufRead, BufReader, Seek},
     },
 };
 

@@ -9,7 +9,9 @@ use {
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day03.txt").expect("Can't open file.");
     let reader = BufReader::new(file);
-    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader).expect("Could not parse DiagnosticReport from input file.").unwrap();
+    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)
+        .expect("Could not parse DiagnosticReport from input file.")
+        .unwrap();
     let bit_count = if diagnostic_report.len() > 0 {
         diagnostic_report[0].input_string_bit_count()
     } else {

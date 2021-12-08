@@ -12,7 +12,8 @@ const SPAWN_AT: u8 = 8;
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day06.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
-    let mut fish_counts = read_lanternfish_counts(reader).expect("Could not read lanternfish counts from file.");
+    let mut fish_counts =
+        read_lanternfish_counts(reader).expect("Could not read lanternfish counts from file.");
     simulate_days(&mut fish_counts, 80);
     let part_1: u128 = fish_counts.iter().map(|(_, value)| value).sum();
     simulate_days(&mut fish_counts, 176); // part 2 is 176 iterations more than part 1

@@ -24,6 +24,9 @@ pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
     };
 }
 
-fn call_with<'a>(tuple: (impl Display + 'a, impl Display + 'a), func: impl Fn(&dyn Display, &dyn Display) + 'a) {
+fn call_with<'a>(
+    tuple: (impl Display + 'a, impl Display + 'a),
+    func: impl Fn(&dyn Display, &dyn Display) + 'a,
+) {
     func(&tuple.0, &tuple.1)
 }

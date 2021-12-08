@@ -16,7 +16,8 @@ use {
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day04.txt").expect("File could not be opened.");
     let reader = BufReader::new(file);
-    let mut bingo_game = BingoGame::new_from_bufread(reader).expect("Bingo game could not be parsed from input.");
+    let mut bingo_game =
+        BingoGame::new_from_bufread(reader).expect("Bingo game could not be parsed from input.");
     let part_1 = bingo_game.clone().calculate_part_1_answer();
     let part_2 = bingo_game.calculate_part_2_answer();
     (part_1, part_2)
