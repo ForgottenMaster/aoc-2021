@@ -3,13 +3,13 @@ mod read_diagnostic_report_error;
 
 use {
     diagnostic_report::DiagnosticReport,
-    std::{error, fmt::Display, fs::File, io::BufReader, iter::repeat},
+    std::{fmt::Display, fs::File, io::BufReader, iter::repeat},
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn error::Error>> {
-    let file = File::open("input/day03.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day03.txt").expect("Can't open file.");
     let reader = BufReader::new(file);
-    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)?.unwrap();
+    let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader).expect("Could not parse DiagnosticReport from input file.").unwrap();
     let bit_count = if diagnostic_report.len() > 0 {
         diagnostic_report[0].input_string_bit_count()
     } else {
@@ -30,7 +30,7 @@ pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn error::Erro
     let co2_scrubber_rating = extract_co2_scrubber_rating(diagnostic_report, bit_count);
     let part_2 = oxygen_generator_rating * co2_scrubber_rating;
 
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 fn extract_oxygen_generator_rating(mut report: Vec<u32>, bit_count: usize) -> u32 {

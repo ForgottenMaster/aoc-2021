@@ -1,22 +1,19 @@
 use {
     crate::common::iter::MapWindowsExt,
     std::{
-        error::Error,
-        {
             fmt::Display,
             fs::File,
             io::{BufRead, BufReader, Seek},
-        },
     },
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day01.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day01.txt").expect("Could not open file.");
     let mut reader = BufReader::new(file);
     let part_1 = calculate_number_of_increases(&mut reader, 1);
-    reader.rewind()?;
+    reader.rewind().expect("Could not rewind the reader.");
     let part_2 = calculate_number_of_increases(&mut reader, 3);
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 /// Processes the input to count how many depth increases there are in the sums

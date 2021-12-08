@@ -12,15 +12,14 @@ use {
     line_segment::LineSegment,
     std::{
         collections::HashMap,
-        error::Error,
         fmt::Display,
         fs::File,
         io::{BufRead, BufReader},
     },
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day05.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day05.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
     let line_segments = load_line_segments(reader);
     let part_1 = count_intersections(&get_point_counts(line_segments.iter().filter(
@@ -30,7 +29,7 @@ pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
         },
     )));
     let part_2 = count_intersections(&get_point_counts(line_segments.iter()));
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 /// Loads the valid line segments from the given BufRead instance

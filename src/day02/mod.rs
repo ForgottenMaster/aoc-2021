@@ -12,18 +12,17 @@ use {
     folder_part_1::FolderPart1,
     folder_part_2::FolderPart2,
     std::{
-        error::Error,
         fmt::Display,
         fs::File,
         io::{BufRead, BufReader},
     },
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day02.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day02.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
     let (part_1, part_2) = calculate_distance_travelled(reader, FolderBoth::default());
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 /// Runs the puzzle over the given buffered reader and uses the provided

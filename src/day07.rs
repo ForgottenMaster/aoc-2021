@@ -1,18 +1,17 @@
 use std::{
     collections::HashMap,
-    error::Error,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day07.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day07.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
     let (crab_position_counts, min, max) = read_crab_position_counts(reader);
     let part_1 = calculate_minimal_fuel_cost_to_align(&crab_position_counts, min, max, 0);
     let part_2 = calculate_minimal_fuel_cost_to_align(&crab_position_counts, min, max, 1);
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 /// Takes a given BufReader that should contain a sequence of comma separated

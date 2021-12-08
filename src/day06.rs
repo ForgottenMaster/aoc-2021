@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    error::Error,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -10,15 +9,15 @@ use std::{
 const RESET_TO: u8 = 6;
 const SPAWN_AT: u8 = 8;
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day06.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day06.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
-    let mut fish_counts = read_lanternfish_counts(reader)?;
+    let mut fish_counts = read_lanternfish_counts(reader).expect("Could not read lanternfish counts from file.");
     simulate_days(&mut fish_counts, 80);
     let part_1: u128 = fish_counts.iter().map(|(_, value)| value).sum();
     simulate_days(&mut fish_counts, 176); // part 2 is 176 iterations more than part 1
     let part_2: u128 = fish_counts.iter().map(|(_, value)| value).sum();
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 fn read_lanternfish_counts(reader: impl BufRead) -> Result<HashMap<u8, u128>, ParseIntError> {

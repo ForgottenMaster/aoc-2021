@@ -7,23 +7,23 @@ mod day05;
 mod day06;
 mod day07;
 
-use std::{error::Error, fmt::Display, io, io::ErrorKind};
+use std::fmt::Display;
 
-pub fn run(day: usize) -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let (part_1, part_2) = match day {
-        1 => day01::run()?,
-        2 => day02::run()?,
-        3 => day03::run()?,
-        4 => day04::run()?,
-        5 => day05::run()?,
-        6 => day06::run()?,
-        7 => day07::run()?,
+pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
+    match day {
+        1 => call_with(day01::run(), func),
+        2 => call_with(day02::run(), func),
+        3 => call_with(day03::run(), func),
+        4 => call_with(day04::run(), func),
+        5 => call_with(day05::run(), func),
+        6 => call_with(day06::run(), func),
+        7 => call_with(day07::run(), func),
         _ => {
-            return Err(Box::new(io::Error::new(
-                ErrorKind::InvalidInput,
-                format!("run called with day {} which is invalid.", day),
-            )))
+            panic!("Invalid day {} passed to run_with function", day);
         }
     };
-    Ok((part_1, part_2))
+}
+
+fn call_with<'a>(tuple: (impl Display + 'a, impl Display + 'a), func: impl Fn(&dyn Display, &dyn Display) + 'a) {
+    func(&tuple.0, &tuple.1)
 }

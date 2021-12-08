@@ -10,16 +10,16 @@ mod read_bingo_game_error;
 
 use {
     bingo_game::BingoGame,
-    std::{error::Error, fmt::Display, fs::File, io::BufReader},
+    std::{fmt::Display, fs::File, io::BufReader},
 };
 
-pub fn run() -> Result<(Box<dyn Display>, Box<dyn Display>), Box<dyn Error>> {
-    let file = File::open("input/day04.txt")?;
+pub fn run() -> (impl Display, impl Display) {
+    let file = File::open("input/day04.txt").expect("File could not be opened.");
     let reader = BufReader::new(file);
-    let mut bingo_game = BingoGame::new_from_bufread(reader)?;
+    let mut bingo_game = BingoGame::new_from_bufread(reader).expect("Bingo game could not be parsed from input.");
     let part_1 = bingo_game.clone().calculate_part_1_answer();
     let part_2 = bingo_game.calculate_part_2_answer();
-    Ok((Box::new(part_1), Box::new(part_2)))
+    (part_1, part_2)
 }
 
 #[cfg(test)]
