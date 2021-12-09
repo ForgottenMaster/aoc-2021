@@ -1,18 +1,57 @@
-use std::fs::read_to_string;
+use std::{collections::HashSet, fs::read_to_string};
 
 pub fn run() -> (u32, u32) {
     let input = read_to_string("input/day09.txt").expect("Can't read contents of input file.");
-    let part_1 = low_points_from_input_string(&input)
-        .into_iter()
-        .map(|elem| (elem + 1) as u32)
-        .sum();
-    (part_1, 0)
+    let (grid, pitch) = extract_numeric_grid(&input);
+    let low_points = extract_low_points(&grid, pitch);
+    let part_1 = low_points.iter().map(|(elem, _)| (elem + 1) as u32).sum();
+    let mut flooded_coordinates = HashSet::with_capacity(grid.len()); // worst case is that the entire grid is flooded (not the case though).
+    let mut basin_sizes = low_points
+        .iter()
+        .map(|(_, coord)| calculate_basin_size(*coord, &grid, pitch, &mut flooded_coordinates))
+        .collect::<Vec<_>>();
+    basin_sizes.sort_by(|a, b| b.cmp(a));
+    let part_2 = basin_sizes.into_iter().take(3).product();
+    (part_1, part_2)
 }
 
-/// Takes the input string of lines and returns the low points of the grid.
-fn low_points_from_input_string(string: &str) -> Vec<u8> {
-    let (grid, pitch) = extract_numeric_grid(string);
-    low_point_iter(&grid, pitch).collect()
+/// Calculates the size of a basin flooding from a given starting coordinate. Since
+/// each coordinate only appears in exactly one basin, we can pass around an allocated HashSet
+/// to use as storage so we know if a coordinate has been visited before (so we don't flood over it again).
+/// Doing this as a simple recursive function should be good enough.
+fn calculate_basin_size(
+    coord: (usize, usize),
+    grid: &[u8],
+    pitch: usize,
+    flooded: &mut HashSet<(usize, usize)>,
+) -> u32 {
+    if grid[coordinate_to_index(pitch, coord)] == 9 || !flooded.insert(coord) {
+        0
+    } else {
+        let (x, y) = coord;
+        let max_x = pitch - 1;
+        let max_y = (grid.len() / pitch) - 1;
+        let mut count = 1;
+
+        // add the sizes reported from neighbours.
+        if x > 0 {
+            count += calculate_basin_size((x - 1, y), grid, pitch, flooded);
+        }
+
+        if x < max_x {
+            count += calculate_basin_size((x + 1, y), grid, pitch, flooded);
+        }
+
+        if y > 0 {
+            count += calculate_basin_size((x, y - 1), grid, pitch, flooded);
+        }
+
+        if y < max_y {
+            count += calculate_basin_size((x, y + 1), grid, pitch, flooded);
+        }
+
+        count
+    }
 }
 
 /// Takes a string slice and parses it to extract the numeric grid from it.
@@ -60,25 +99,28 @@ fn index_to_coordinate(pitch: usize, index: usize) -> (usize, usize) {
     (index % pitch, index / pitch)
 }
 
-/// Produces an iterator over all the low points in the grid which can then be used to calculate
-/// the number of low points or whatever.
-fn low_point_iter(grid: &[u8], pitch: usize) -> impl Iterator<Item = u8> + '_ {
-    let max_y = index_to_coordinate(pitch, grid.len() - 1).1;
+/// Takes the grid and pitch of the grid and determines where the low points in the grid are.
+/// Returns the low points themselves along with the 2D coordinates to find them in the grid.
+fn extract_low_points(grid: &[u8], pitch: usize) -> Vec<(u8, (usize, usize))> {
+    let max_y = (grid.len() / pitch) - 1;
     let max_x = pitch - 1;
 
-    grid.into_iter().enumerate().filter_map(move |(idx, elem)| {
-        let (x, y) = index_to_coordinate(pitch, idx);
+    grid.into_iter()
+        .enumerate()
+        .filter_map(move |(idx, elem)| {
+            let (x, y) = index_to_coordinate(pitch, idx);
 
-        if (y > 0 && grid[coordinate_to_index(pitch, (x, y - 1))] <= *elem)
-            || (y < max_y && grid[coordinate_to_index(pitch, (x, y + 1))] <= *elem)
-            || (x > 0 && grid[coordinate_to_index(pitch, (x - 1, y))] <= *elem)
-            || (x < max_x && grid[coordinate_to_index(pitch, (x + 1, y))] <= *elem)
-        {
-            None
-        } else {
-            Some(*elem)
-        }
-    })
+            if (y > 0 && grid[coordinate_to_index(pitch, (x, y - 1))] <= *elem)
+                || (y < max_y && grid[coordinate_to_index(pitch, (x, y + 1))] <= *elem)
+                || (x > 0 && grid[coordinate_to_index(pitch, (x - 1, y))] <= *elem)
+                || (x < max_x && grid[coordinate_to_index(pitch, (x + 1, y))] <= *elem)
+            {
+                None
+            } else {
+                Some((*elem, index_to_coordinate(pitch, idx)))
+            }
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -166,15 +208,15 @@ mod tests {
     }
 
     #[test]
-    fn test_low_point_iter() {
+    fn test_low_point_extraction() {
         const INPUT: &[u8] = &[2, 1, 9, 3, 9, 8, 9, 8, 5];
         const PITCH: usize = 3;
-        let expected = vec![1, 5];
-        assert_eq!(low_point_iter(&INPUT, PITCH).collect::<Vec<_>>(), expected);
+        let expected = vec![(1, (1, 0)), (5, (2, 2))];
+        assert_eq!(extract_low_points(&INPUT, PITCH), expected);
     }
 
     #[test]
-    fn test_low_points_from_input_string() {
+    fn test_calculate_basin_size() {
         const INPUT: &str = r#"
         2199943210
         3987894921
@@ -182,7 +224,11 @@ mod tests {
         8767896789
         9899965678
         "#;
-        let expected = vec![1, 0, 5, 5];
-        assert_eq!(low_points_from_input_string(INPUT), expected);
+        let (grid, pitch) = extract_numeric_grid(INPUT);
+        let mut hs = HashSet::with_capacity(grid.len());
+        assert_eq!(calculate_basin_size((0, 0), &grid, pitch, &mut hs), 3);
+        assert_eq!(calculate_basin_size((9, 0), &grid, pitch, &mut hs), 9);
+        assert_eq!(calculate_basin_size((2, 1), &grid, pitch, &mut hs), 14);
+        assert_eq!(calculate_basin_size((9, 4), &grid, pitch, &mut hs), 9);
     }
 }
