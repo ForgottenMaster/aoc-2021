@@ -85,6 +85,6 @@ mod tests {
     #[should_panic]
     fn test_segment_label_from_number_invalid() {
         let number = 0b00100100;
-        let label: SegmentLabel = number.into();
+        let _label: SegmentLabel = number.into();
     }
 }

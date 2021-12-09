@@ -131,14 +131,14 @@ mod tests {
             | SegmentLabel::F as u8
             | SegmentLabel::D as u8
             | SegmentLabel::C as u8;
-        let calculated = extract_bitmask_with_len(INPUT, 4, |elem| true);
+        let calculated = extract_bitmask_with_len(INPUT, 4, |_| true);
         assert_eq!(calculated, EXPECTED);
     }
 
     #[test]
     #[should_panic]
     fn test_extract_bitmask_with_len_invalid() {
-        extract_bitmask_with_len("def afdc ab", 5, |elem| true);
+        extract_bitmask_with_len("def afdc ab", 5, |_| true);
     }
 
     #[test]
