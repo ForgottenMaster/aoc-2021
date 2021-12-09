@@ -1,5 +1,3 @@
-use super::number::Number;
-
 /// Enumeration that exposes the bitmasks that we use to identify
 /// a specific wire/connection.
 #[derive(Debug, PartialEq)]
@@ -31,11 +29,10 @@ impl From<char> for SegmentLabel {
     }
 }
 
-/// It's only safe to convert a Number that matches exactly one of the SegmentLabels.
+/// It's only safe to convert a number that matches exactly one of the SegmentLabels.
 /// The program will panic if not, but this is fine as it indicates a problem with the input.
-impl From<Number> for SegmentLabel {
-    fn from(value: Number) -> Self {
-        let value: u8 = value.into();
+impl From<u8> for SegmentLabel {
+    fn from(value: u8) -> Self {
         if value == Self::A as u8 {
             Self::A
         } else if value == Self::B as u8 {
@@ -79,15 +76,15 @@ mod tests {
 
     #[test]
     fn test_segment_label_from_number_valid() {
-        let number = Number::from("d");
+        let number = 0b00100000;
         let label: SegmentLabel = number.into();
-        assert_eq!(label, SegmentLabel::D);
+        assert_eq!(label, SegmentLabel::F);
     }
 
     #[test]
     #[should_panic]
     fn test_segment_label_from_number_invalid() {
-        let number = Number::from("h");
+        let number = 0b00100100;
         let label: SegmentLabel = number.into();
     }
 }
