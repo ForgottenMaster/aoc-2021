@@ -40,10 +40,14 @@ impl<S: Stack<TokenType>> LineParser<S> {
             }
         }
 
-        if let Some(expected) = self.stack.pop() {
-            LineType::Incomplete(expected)
-        } else {
+        if self.stack.len() == 0 {
             LineType::Complete
+        } else {
+            let mut vec = Vec::with_capacity(self.stack.len());
+            while let Some(token) = self.stack.pop() {
+                vec.push(token);
+            }
+            LineType::Incomplete(vec)
         }
     }
 }
@@ -75,20 +79,27 @@ mod tests {
         let mut parser = LineParser::new(Vec::new());
         assert!(matches!(
             parser.parse("({})[({})][".chars()),
-            LineType::Incomplete(TokenType::SquareBracket)
+            LineType::Incomplete(vec) if vec == vec![TokenType::SquareBracket]
         ));
         assert!(matches!(
             parser.parse("({})[({})](".chars()),
-            LineType::Incomplete(TokenType::Parenthesis)
+            LineType::Incomplete(vec) if vec == vec![TokenType::Parenthesis]
         ));
         assert!(matches!(
             parser.parse("({})[({})]<".chars()),
-            LineType::Incomplete(TokenType::AngularBracket)
+            LineType::Incomplete(vec) if vec == vec![TokenType::AngularBracket]
         ));
         assert!(matches!(
             parser.parse("({})[({})]{".chars()),
-            LineType::Incomplete(TokenType::Brace)
+            LineType::Incomplete(vec) if vec == vec![TokenType::Brace]
         ));
+    }
+
+    #[test]
+    fn test_line_parser_parse_incomplete_multi_char() {
+        let mut parser = LineParser::new(Vec::new());
+        assert!(matches!(parser.parse("({[]})<[]>{[[<".chars()), 
+            LineType::Incomplete(vec) if vec == vec![TokenType::AngularBracket, TokenType::SquareBracket, TokenType::SquareBracket, TokenType::Brace]));
     }
 
     #[test]

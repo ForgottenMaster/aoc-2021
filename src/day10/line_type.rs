@@ -10,7 +10,7 @@ use super::token_type::TokenType;
 #[derive(Debug, PartialEq)]
 pub enum LineType {
     Complete,
-    Incomplete(TokenType),
+    Incomplete(Vec<TokenType>),
     Corrupted {
         expected: TokenType,
         found: TokenType,
