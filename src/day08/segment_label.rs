@@ -71,7 +71,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_segment_label_from_char_invalid() {
-        SegmentLabel::from('z');
+        let _label = SegmentLabel::from('z');
     }
 
     #[test]
