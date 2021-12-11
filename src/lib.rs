@@ -8,6 +8,7 @@ mod day06;
 mod day07;
 mod day08;
 mod day09;
+mod day10;
 
 use std::fmt::Display;
 
@@ -22,6 +23,7 @@ pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
         7 => call_with(day07::run(), func),
         8 => call_with(day08::run(), func),
         9 => call_with(day09::run(), func),
+        10 => call_with(day10::run(), func),
         _ => {
             panic!("Invalid day {} passed to run_with function", day);
         }
