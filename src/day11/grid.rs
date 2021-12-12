@@ -9,6 +9,7 @@ pub struct Grid<S> {
     width: usize,
     height: usize,
     flash_count: u32,
+    step_count: u32,
 }
 
 impl<S: Stack<(usize, usize)>> Grid<S> {
@@ -19,12 +20,28 @@ impl<S: Stack<(usize, usize)>> Grid<S> {
         self.flash_count
     }
 
+    /// Runs single steps until the entire grid is synchronized and flashes at the same time.
+    /// Returns the total number of steps that were required to achieve that state.
+    pub fn run_until_synchronized_flash(&mut self) -> u32 {
+        while !self.is_synchronized() {
+            self.run_single_step();
+        }
+        self.step_count
+    }
+
+    /// Returns true only if all cells are at energy level 0 (they flashed at the same
+    /// time and are now synchronized).
+    fn is_synchronized(&self) -> bool {
+        self.grid.iter().all(|elem| *elem == 0)
+    }
+
     /// Runs a single time step of the energy increase + flash and
     /// returns the number of cells that flashed.
     fn run_single_step(&mut self) {
         self.increase_energy_levels();
         self.process_flash_stack();
         self.reset_flashed_energy_levels();
+        self.step_count += 1;
     }
 
     /// Increases the energy levels in the first step of the process. This
@@ -131,6 +148,7 @@ where
             width,
             height,
             flash_count: 0,
+            step_count: 0,
         }
     }
 }
@@ -221,6 +239,7 @@ mod tests {
             width,
             height,
             flash_count: 0,
+            step_count: 0,
         };
         grid.try_flash((2, 1));
         assert_eq!(grid.grid, vec![1, 2, 3, 4, 5, 10, 7, 8, 9]);
@@ -342,5 +361,45 @@ mod tests {
             ]
         );
         assert_eq!(flash_count, 1656);
+    }
+
+    #[test]
+    fn test_is_synchronized_false() {
+        const INPUT: &str = r#"
+        123
+        456
+        789
+        "#;
+        let grid: Grid<Vec<_>> = INPUT.trim().lines().into();
+        assert!(!grid.is_synchronized());
+    }
+
+    #[test]
+    fn test_is_synchronized_true() {
+        const INPUT: &str = r#"
+        000
+        000
+        000
+        "#;
+        let grid: Grid<Vec<_>> = INPUT.trim().lines().into();
+        assert!(grid.is_synchronized());
+    }
+
+    #[test]
+    fn test_run_until_synchronized() {
+        const INPUT: &str = r#"
+        5483143223
+        2745854711
+        5264556173
+        6141336146
+        6357385478
+        4167524645
+        2176841721
+        6882881134
+        4846848554
+        5283751526
+        "#;
+        let mut grid: Grid<Vec<_>> = INPUT.trim().lines().into();
+        assert_eq!(grid.run_until_synchronized_flash(), 195);
     }
 }
