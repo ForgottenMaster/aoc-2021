@@ -4,7 +4,7 @@ use {
 };
 
 fn criterion_benchmark(c: &mut Criterion) {
-    (1..=10).for_each(|day| {
+    (1..=11).for_each(|day| {
         c.bench_function(&format!("run_day_{}", day), |b| {
             b.iter(|| {
                 run_with(day, |_, _| {});
