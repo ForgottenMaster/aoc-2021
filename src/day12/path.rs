@@ -14,14 +14,16 @@ use {
 pub struct Path {
     sequence: Vec<Node>,
     small_cave_hashes_visited: Vec<u64>,
+    allowed_double_visit_small_cave_hash: Option<u64>,
 }
 
 impl Path {
     /// Creates a new path that initially has only "Start" in it.
-    pub fn new() -> Self {
+    pub fn new(allowed_double_visit_small_cave_hash: Option<u64>) -> Self {
         Self {
             sequence: vec![Node::Start],
             small_cave_hashes_visited: vec![],
+            allowed_double_visit_small_cave_hash,
         }
     }
 
@@ -45,7 +47,18 @@ impl Path {
                         None
                     } else {
                         if let Node::SmallCave(hash) = node {
-                            if self.small_cave_hashes_visited.contains(hash) {
+                            let visited_count = self
+                                .small_cave_hashes_visited
+                                .iter()
+                                .filter(|elem| *elem == hash)
+                                .count();
+
+                            if let Some(allowed_hash) = self.allowed_double_visit_small_cave_hash {
+                                let allowed_count = if allowed_hash == *hash { 2 } else { 1 };
+                                if visited_count > allowed_count {
+                                    return None;
+                                }
+                            } else if visited_count == 1 {
                                 return None;
                             }
                         }
@@ -53,6 +66,8 @@ impl Path {
                         // New path will branch from this one, so the visited caves and sequence will be the same
                         let mut sequence = self.sequence.clone();
                         let mut small_cave_hashes_visited = self.small_cave_hashes_visited.clone();
+                        let allowed_double_visit_small_cave_hash =
+                            self.allowed_double_visit_small_cave_hash.clone();
 
                         // Except that we push on the new node
                         sequence.push((*node).clone());
@@ -63,6 +78,7 @@ impl Path {
                         Some(Self {
                             sequence,
                             small_cave_hashes_visited,
+                            allowed_double_visit_small_cave_hash,
                         })
                     }
                 })
@@ -83,14 +99,14 @@ mod tests {
 
     #[test]
     fn test_path_construction() {
-        let path = Path::new();
+        let path = Path::new(None);
         assert_eq!(path.sequence, vec![Node::Start]);
         assert_eq!(path.small_cave_hashes_visited, vec![]);
     }
 
     #[test]
     fn test_is_complete_check() {
-        let mut path = Path::new();
+        let mut path = Path::new(None);
         assert!(!path.is_complete());
         path.sequence.push(Node::End);
         assert!(path.is_complete());
@@ -123,7 +139,7 @@ mod tests {
         hm.entry(Node::LargeCave(28)).or_default().insert(Node::End);
         hm.entry(Node::End).or_default().insert(Node::LargeCave(28));
 
-        let paths = vec![Path::new()];
+        let paths = vec![Path::new(None)];
         let paths = paths
             .into_iter()
             .filter_map(|path| path.proceed(&mut hm))
@@ -135,11 +151,13 @@ mod tests {
             vec![
                 Path {
                     sequence: vec![Node::Start, Node::SmallCave(22)],
-                    small_cave_hashes_visited: [22].into_iter().collect()
+                    small_cave_hashes_visited: [22].into_iter().collect(),
+                    allowed_double_visit_small_cave_hash: None
                 },
                 Path {
                     sequence: vec![Node::Start, Node::SmallCave(25)],
-                    small_cave_hashes_visited: [25].into_iter().collect()
+                    small_cave_hashes_visited: [25].into_iter().collect(),
+                    allowed_double_visit_small_cave_hash: None
                 }
             ]
             .iter()
@@ -155,7 +173,8 @@ mod tests {
             paths.iter().collect::<HashSet<_>>(),
             vec![Path {
                 sequence: vec![Node::Start, Node::SmallCave(22), Node::LargeCave(28)],
-                small_cave_hashes_visited: [22].into_iter().collect()
+                small_cave_hashes_visited: [22].into_iter().collect(),
+                allowed_double_visit_small_cave_hash: None
             }]
             .iter()
             .collect::<HashSet<_>>()
@@ -175,7 +194,8 @@ mod tests {
                     Node::LargeCave(28),
                     Node::End
                 ],
-                small_cave_hashes_visited: [22].into_iter().collect()
+                small_cave_hashes_visited: [22].into_iter().collect(),
+                allowed_double_visit_small_cave_hash: None
             }]
             .iter()
             .collect::<HashSet<_>>()
@@ -196,7 +216,8 @@ mod tests {
                     Node::LargeCave(28),
                     Node::End
                 ],
-                small_cave_hashes_visited: [22].into_iter().collect()
+                small_cave_hashes_visited: [22].into_iter().collect(),
+                allowed_double_visit_small_cave_hash: None
             }]
             .iter()
             .collect::<HashSet<_>>()

@@ -31,7 +31,7 @@ fn find_paths_through_cave(
 ) -> impl Iterator<Item = Path> {
     let links = parse_all_links(iter);
     let mut storage = vec![];
-    let mut paths = vec![Some(Path::new())];
+    let mut paths = vec![Some(Path::new(None))];
     proceed_to_completion(&mut paths, &mut storage, &links);
     paths.into_iter().map(|elem| elem.unwrap())
 }
@@ -268,7 +268,7 @@ mod tests {
             .trim()
             .lines(),
         );
-        let mut paths = vec![Some(Path::new())];
+        let mut paths = vec![Some(Path::new(None))];
         let mut storage = vec![];
         assert!(matches!(
             proceed_paths_once(&mut paths, &mut storage, &links),
@@ -292,7 +292,7 @@ mod tests {
             .trim()
             .lines(),
         );
-        let mut paths = vec![Some(Path::new())];
+        let mut paths = vec![Some(Path::new(None))];
         let mut storage = vec![];
         proceed_to_completion(&mut paths, &mut storage, &links);
         assert_eq!(paths.len(), 10);
@@ -316,7 +316,7 @@ mod tests {
             .trim()
             .lines(),
         );
-        let mut paths = vec![Some(Path::new())];
+        let mut paths = vec![Some(Path::new(None))];
         let mut storage = vec![];
         proceed_to_completion(&mut paths, &mut storage, &links);
         assert_eq!(paths.len(), 19);
@@ -348,7 +348,7 @@ mod tests {
             .trim()
             .lines(),
         );
-        let mut paths = vec![Some(Path::new())];
+        let mut paths = vec![Some(Path::new(None))];
         let mut storage = vec![];
         proceed_to_completion(&mut paths, &mut storage, &links);
         assert_eq!(paths.len(), 226);
