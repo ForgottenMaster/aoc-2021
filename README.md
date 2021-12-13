@@ -61,7 +61,7 @@ This table identifies which solutions have been completed and which are still ye
 |09|:heavy_check_mark:|:heavy_check_mark:|
 |10|:heavy_check_mark:|:heavy_check_mark:|
 |11|:heavy_check_mark:|:heavy_check_mark:|
-|12|:heavy_check_mark:|:x:|
+|12|:heavy_check_mark:|:heavy_check_mark:|
 |13|:x:|:x:|
 |14|:x:|:x:|
 |15|:x:|:x:|

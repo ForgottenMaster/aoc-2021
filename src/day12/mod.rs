@@ -1,86 +1,114 @@
 mod node;
-mod path;
-mod status;
 
 use {
+    super::common::collections::Stack,
     node::Node,
-    path::Path,
-    status::Status,
     std::{
         borrow::Borrow,
-        collections::{HashMap, HashSet},
+        collections::{
+            hash_map::DefaultHasher,
+            {HashMap, HashSet},
+        },
         fs::read_to_string,
+        hash::{Hash, Hasher},
     },
 };
 
-pub fn run() -> (usize, u32) {
-    let part_1 = find_paths_through_cave(
-        read_to_string("input/day12.txt")
-            .expect("Couldn't read input file.")
-            .trim()
-            .lines(),
-    )
-    .count();
-    (part_1, 0)
+pub fn run() -> (usize, usize) {
+    let content = read_to_string("input/day12.txt").expect("Could not open file for input.");
+    count_paths_through_cave(content.trim().lines())
 }
 
-/// Accepts an iterator over anything that borrows as str (the lines defining the links).
-/// Returns an iterator over all paths found through the cave system.
-fn find_paths_through_cave(
-    iter: impl Iterator<Item = impl Borrow<str>>,
-) -> impl Iterator<Item = Path> {
+/// Takes an iterator over lines of text which will be parsed as the links of the graph.
+/// Determines results for part 1 (not allowing a double visit) and for part 2. (allowing double visit of ONE small cave).
+fn count_paths_through_cave(iter: impl Iterator<Item = impl Borrow<str>>) -> (usize, usize) {
     let links = parse_all_links(iter);
-    let mut storage = vec![];
-    let mut paths = vec![Some(Path::new(None))];
-    proceed_to_completion(&mut paths, &mut storage, &links);
-    paths.into_iter().map(|elem| elem.unwrap())
+    let mut stack = vec![];
+    (
+        get_hashes_of_paths_through_cave(&links, None, &mut stack).len(),
+        links
+            .keys()
+            .filter_map(|elem| {
+                if let Node::SmallCave(hash) = elem {
+                    Some(get_hashes_of_paths_through_cave(
+                        &links,
+                        Some(*hash),
+                        &mut stack,
+                    ))
+                } else {
+                    None
+                }
+            })
+            .flat_map(|set| set.into_iter())
+            .collect::<HashSet<_>>()
+            .len(),
+    )
 }
 
-/// Function which takes a mutable vector of Option<Path> and performs all iterations of progressing
-/// the paths according to the defined links.
-fn proceed_to_completion(
-    paths: &mut Vec<Option<Path>>,
-    newpath_storage: &mut Vec<Option<Path>>,
+/// Determines how many paths there are from start to end while allowing the specified small cave to be visited
+/// twice (this could be None). This uses a Stack and iteration to avoid blowing the function stack with a recursive method.
+/// Stack must store our state tuples, the state being the current node, and the number of times we've visited each small cave.
+/// This actually returns the path hashes of the located paths as a set, since part 2 involves us only counting unique paths through the cave
+/// with the different small caves allowing double visits.
+fn get_hashes_of_paths_through_cave(
     links: &HashMap<Node, HashSet<Node>>,
-) {
-    loop {
-        if let Status::Complete = proceed_paths_once(paths, newpath_storage, links) {
-            break;
+    allowed_double_visit_hash: Option<u64>,
+    stack: &mut impl Stack<(Node, HashMap<u64, u32>, DefaultHasher)>,
+) -> HashSet<u64> {
+    let mut path_hashes = HashSet::new();
+    stack.clear();
+    let mut hasher = DefaultHasher::new();
+    Node::Start.hash(&mut hasher);
+    stack.push((Node::Start, HashMap::new(), hasher));
+
+    while let Some((node, visited, hasher)) = stack.pop() {
+        for node in links[&node]
+            .iter()
+            .filter(|node| is_node_allowed_to_be_visited(node, &visited, allowed_double_visit_hash))
+        {
+            let mut hasher = hasher.clone();
+            node.hash(&mut hasher);
+            match node {
+                Node::End => { path_hashes.insert(hasher.finish()); },
+                Node::LargeCave(_) | Node::SmallCave(_) => {
+                    let mut visited = visited.clone();
+                    if let Node::SmallCave(hash) = node {
+                        *visited.entry(*hash).or_default() += 1;
+                    }
+                    stack.push(((*node).clone(), visited, hasher));
+                },
+                _ => panic!("Shouldn't have got here as the start node should be filtered out as a valid transition target.")
+            }
         }
     }
+    path_hashes
 }
 
-/// Function which takes a mutable vector of Option<Path> and performs one iteration of
-/// progressing the path according to the defined links. Removes paths that end in a dead end.
-/// Returns a Status indicating whether there are still some incomplete paths or not.
-fn proceed_paths_once(
-    paths: &mut Vec<Option<Path>>,
-    newpath_storage: &mut Vec<Option<Path>>,
-    links: &HashMap<Node, HashSet<Node>>,
-) -> Status {
-    // for each path, we want to take the path out of the option so it can be proceeded
-    // and get a replacement set of paths, with which we extend the paths vector.
-    for path in paths.into_iter() {
-        if let Some(new_paths) = path.take().unwrap().proceed(links) {
-            newpath_storage.extend(new_paths.into_iter().map(|elem| Some(elem)));
+/// Function that takes a reference to a Node, the visited counts of small caves, and the allowed double visit hash
+/// and determines if it's okay to visit the given Node based on this information.
+fn is_node_allowed_to_be_visited(
+    node: &Node,
+    visited: &HashMap<u64, u32>,
+    allowed_double_visit_hash: Option<u64>,
+) -> bool {
+    match node {
+        Node::Start => false,
+        Node::End | Node::LargeCave(..) => true,
+        Node::SmallCave(hash) => {
+            if let Some(count) = visited.get(hash) {
+                if let Some(allowed_double_visit_hash) = allowed_double_visit_hash {
+                    if *hash == allowed_double_visit_hash {
+                        *count < 2 // we're allowed to double visit, but only if we haven't already
+                    } else {
+                        false // we're not the allowed double visit node, so we've visited once already which is max
+                    }
+                } else {
+                    false // we've visited once before and we're not allowed to double visit any node
+                }
+            } else {
+                true // small caves can be visited at least once
+            }
         }
-    }
-
-    // Clear any nones from paths.
-    paths.retain(|elem| elem.is_some());
-
-    // Extend with new paths.
-    paths.extend(newpath_storage.into_iter().map(|elem| (*elem).clone()));
-    newpath_storage.clear();
-
-    // Return appropriate path calculation state.
-    if paths
-        .iter()
-        .all(|elem| elem.as_ref().unwrap().is_complete())
-    {
-        Status::Complete
-    } else {
-        Status::Incomplete
     }
 }
 
@@ -254,110 +282,9 @@ mod tests {
     }
 
     #[test]
-    fn test_proceed_paths_once() {
-        let links = parse_all_links(
-            r#"
-        start-A
-        start-b
-        A-c
-        A-b
-        b-d
-        A-end
-        b-end
-        "#
-            .trim()
-            .lines(),
-        );
-        let mut paths = vec![Some(Path::new(None))];
-        let mut storage = vec![];
-        assert!(matches!(
-            proceed_paths_once(&mut paths, &mut storage, &links),
-            Status::Incomplete
-        ));
-        assert_eq!(paths.len(), 2);
-    }
-
-    #[test]
-    fn test_proceed_to_completion_small() {
-        let links = parse_all_links(
-            r#"
-        start-A
-        start-b
-        A-c
-        A-b
-        b-d
-        A-end
-        b-end
-        "#
-            .trim()
-            .lines(),
-        );
-        let mut paths = vec![Some(Path::new(None))];
-        let mut storage = vec![];
-        proceed_to_completion(&mut paths, &mut storage, &links);
-        assert_eq!(paths.len(), 10);
-    }
-
-    #[test]
-    fn test_proceed_to_completion_large() {
-        let links = parse_all_links(
-            r#"
-            dc-end
-            HN-start
-            start-kj
-            dc-start
-            dc-HN
-            LN-dc
-            HN-end
-            kj-sa
-            kj-HN
-            kj-dc
-        "#
-            .trim()
-            .lines(),
-        );
-        let mut paths = vec![Some(Path::new(None))];
-        let mut storage = vec![];
-        proceed_to_completion(&mut paths, &mut storage, &links);
-        assert_eq!(paths.len(), 19);
-    }
-
-    #[test]
-    fn test_proceed_to_completion_supersize() {
-        let links = parse_all_links(
-            r#"
-            fs-end
-            he-DX
-            fs-he
-            start-DX
-            pj-DX
-            end-zg
-            zg-sl
-            zg-pj
-            pj-he
-            RW-he
-            fs-DX
-            pj-RW
-            zg-RW
-            start-pj
-            he-WI
-            zg-he
-            pj-fs
-            start-RW
-        "#
-            .trim()
-            .lines(),
-        );
-        let mut paths = vec![Some(Path::new(None))];
-        let mut storage = vec![];
-        proceed_to_completion(&mut paths, &mut storage, &links);
-        assert_eq!(paths.len(), 226);
-    }
-
-    #[test]
     fn test_find_paths_through_cave_small() {
         assert_eq!(
-            find_paths_through_cave(
+            count_paths_through_cave(
                 r#"
         start-A
         start-b
@@ -369,16 +296,15 @@ mod tests {
         "#
                 .trim()
                 .lines(),
-            )
-            .count(),
-            10
+            ),
+            (10, 36)
         );
     }
 
     #[test]
     fn test_find_paths_through_cave_large() {
         assert_eq!(
-            find_paths_through_cave(
+            count_paths_through_cave(
                 r#"
                 dc-end
                 HN-start
@@ -393,16 +319,15 @@ mod tests {
         "#
                 .trim()
                 .lines(),
-            )
-            .count(),
-            19
+            ),
+            (19, 103)
         );
     }
 
     #[test]
     fn test_find_paths_through_cave_supersize() {
         assert_eq!(
-            find_paths_through_cave(
+            count_paths_through_cave(
                 r#"
                 fs-end
                 he-DX
@@ -425,9 +350,124 @@ mod tests {
         "#
                 .trim()
                 .lines(),
-            )
-            .count(),
-            226
+            ),
+            (226, 3509)
         );
+    }
+
+    #[test]
+    fn test_is_node_allowed_to_be_visited() {
+        let mut visited = HashMap::new();
+        visited.insert(1, 1);
+        visited.insert(2, 2);
+        visited.insert(3, 1);
+
+        // test with no double-visits.
+        assert!(!is_node_allowed_to_be_visited(&Node::Start, &visited, None));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::LargeCave(17),
+            &visited,
+            None
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(1),
+            &visited,
+            None
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(2),
+            &visited,
+            None
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(3),
+            &visited,
+            None
+        ));
+        assert!(is_node_allowed_to_be_visited(&Node::End, &visited, None));
+
+        // test with double-visit to 1.
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::Start,
+            &visited,
+            Some(1)
+        ));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::LargeCave(17),
+            &visited,
+            Some(1)
+        ));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::SmallCave(1),
+            &visited,
+            Some(1)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(2),
+            &visited,
+            Some(1)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(3),
+            &visited,
+            Some(1)
+        ));
+        assert!(is_node_allowed_to_be_visited(&Node::End, &visited, Some(1)));
+
+        // test with double-visit to 2.
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::Start,
+            &visited,
+            Some(2)
+        ));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::LargeCave(17),
+            &visited,
+            Some(2)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(1),
+            &visited,
+            Some(2)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(2),
+            &visited,
+            Some(2)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(3),
+            &visited,
+            Some(2)
+        ));
+        assert!(is_node_allowed_to_be_visited(&Node::End, &visited, Some(2)));
+
+        // test with double-visit to 3.
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::Start,
+            &visited,
+            Some(3)
+        ));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::LargeCave(17),
+            &visited,
+            Some(3)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(1),
+            &visited,
+            Some(3)
+        ));
+        assert!(!is_node_allowed_to_be_visited(
+            &Node::SmallCave(2),
+            &visited,
+            Some(3)
+        ));
+        assert!(is_node_allowed_to_be_visited(
+            &Node::SmallCave(3),
+            &visited,
+            Some(3)
+        ));
+        assert!(is_node_allowed_to_be_visited(&Node::End, &visited, Some(3)));
     }
 }
