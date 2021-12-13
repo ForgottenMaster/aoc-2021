@@ -1,3 +1,5 @@
+![Rust Workflow Badge](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/rust.yml/badge.svg)
+
 # aoc-2021-rust
 This repository will hold my solutions to the 2021 set of coding exercises for the "Advent of Code". I will be using the Rust programming language for this and trying to be as idiomatic as possible.
 
