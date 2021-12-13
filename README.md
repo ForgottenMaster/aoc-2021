@@ -1,6 +1,7 @@
 [![Check and Lint](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/check-and-lint.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/check-and-lint.yaml)
 [![Release Packaging](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/release-packaging.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/release-packaging.yaml)
 [![Test with Code Coverage](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/gh/ForgottenMaster/aoc-2021/branch/main/graph/badge.svg?token=9PWKPRF1UW)](https://codecov.io/gh/ForgottenMaster/aoc-2021)
 
 # aoc-2021-rust
 This repository will hold my solutions to the 2021 set of coding exercises for the "Advent of Code". I will be using the Rust programming language for this and trying to be as idiomatic as possible.
