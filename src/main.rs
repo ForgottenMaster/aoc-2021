@@ -10,17 +10,15 @@ fn main() {
 fn main_internal(args: impl Iterator<Item = String>) {
     if let Some(solution_number) = args.skip(1).next() {
         let start_time = Instant::now();
-        run_with(
-            solution_number
-                .parse::<usize>()
-                .expect("Couldn't parse the provided solution number as an integer."),
-            |part_1, part_2| {
-                let elapsed = start_time.elapsed().as_micros();
-                println!("Part 1 => {}", part_1);
-                println!("Part 2 => {}", part_2);
-                println!("Took {} microseconds", elapsed);
-            },
-        );
+        let solution_number = solution_number
+            .parse::<usize>()
+            .expect("Couldn't parse the provided solution number as an integer.");
+        run_with(solution_number, |part_1, part_2| {
+            let elapsed = start_time.elapsed().as_micros();
+            println!("Part 1 => {}", part_1);
+            println!("Part 2 => {}", part_2);
+            println!("Took {} microseconds", elapsed);
+        });
     } else {
         panic!("Argument list to program requires an entry indicating the day number to run.");
     }
