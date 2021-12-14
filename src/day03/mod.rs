@@ -6,9 +6,6 @@ use {
     std::{fmt::Display, fs::File, io::BufReader, iter::repeat},
 };
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day03.txt").expect("Can't open file.");
     let reader = BufReader::new(file);

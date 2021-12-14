@@ -5,9 +5,6 @@ use {
     std::{fmt::Display, fs::read_to_string},
 };
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (impl Display, impl Display) {
     let file_content = read_to_string("input/day08.txt").expect("Could not read contents of file.");
     process_content(&file_content)

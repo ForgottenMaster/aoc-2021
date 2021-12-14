@@ -24,16 +24,10 @@ mod day22;
 mod day23;
 mod day24;
 mod day25;
-mod execution_error;
-
-pub use execution_error::ExecutionError;
 
 use std::fmt::Display;
 
-pub fn run_with(
-    day: usize,
-    func: impl Fn(&dyn Display, &dyn Display),
-) -> Result<(), ExecutionError> {
+pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
     match day {
         1 => call_with(day01::run, func),
         2 => call_with(day02::run, func),
@@ -61,10 +55,9 @@ pub fn run_with(
         24 => call_with(day24::run, func),
         25 => call_with(day25::run, func),
         _ => {
-            return Err(ExecutionError::InvalidDay(day));
+            panic!("Invalid day number provided")
         }
     };
-    Ok(())
 }
 
 fn call_with<'a, T: Display + 'a, U: Display + 'a>(
@@ -84,14 +77,12 @@ mod tests {
 
     #[test]
     fn test_all_solutions_run_normally() {
-        (1..=25).for_each(|day| assert!(run_with(day, |_, _| {}).is_ok()));
+        (1..=25).for_each(|day| run_with(day, |_, _| {}));
     }
 
     #[test]
+    #[should_panic]
     fn test_invalid_solution_panic() {
-        assert!(matches!(
-            run_with(usize::MAX, |_, _| {}).unwrap_err(),
-            ExecutionError::InvalidDay(usize::MAX)
-        ));
+        run_with(usize::MAX, |_, _| {});
     }
 }

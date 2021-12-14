@@ -8,9 +8,6 @@ use {
     line_parser::LineParser, line_type::LineType, std::fs::read_to_string, token_type::TokenType,
 };
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (u32, u64) {
     let input = read_to_string("input/day10.txt").expect("Could not read input file.");
     let (part_1, part_2) = calculate_scores(&input);

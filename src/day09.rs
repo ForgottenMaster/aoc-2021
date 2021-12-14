@@ -1,8 +1,5 @@
 use std::{collections::HashSet, fs::read_to_string};
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (u32, u32) {
     let input = read_to_string("input/day09.txt").expect("Can't read contents of input file.");
     let (grid, pitch) = extract_numeric_grid(&input);

@@ -13,9 +13,6 @@ use {
     std::{fmt::Display, fs::File, io::BufReader},
 };
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day04.txt").expect("File could not be opened.");
     let reader = BufReader::new(file);

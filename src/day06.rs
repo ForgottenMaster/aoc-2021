@@ -9,9 +9,6 @@ use std::{
 const RESET_TO: u8 = 6;
 const SPAWN_AT: u8 = 8;
 
-#[derive(Debug, PartialEq)]
-pub enum ExecutionError {}
-
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day06.txt").expect("Could not open file.");
     let reader = BufReader::new(file);
