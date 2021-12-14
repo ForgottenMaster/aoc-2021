@@ -1,6 +1,6 @@
 [![Check and Lint](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/check-and-lint.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/check-and-lint.yaml)
 [![Release Packaging](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/release-packaging.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/release-packaging.yaml)
-[![Test with Code Coverage](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test.yaml)
+[![Test Coverage](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/ForgottenMaster/aoc-2021/actions/workflows/test-coverage.yaml)
 [![codecov](https://codecov.io/gh/ForgottenMaster/aoc-2021/branch/main/graph/badge.svg?token=9PWKPRF1UW)](https://codecov.io/gh/ForgottenMaster/aoc-2021)
 
 # aoc-2021-rust
