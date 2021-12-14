@@ -12,7 +12,7 @@ jobs:
     env:
       PROJECT_NAME_UNDERSCORE: aoc_2021
       CARGO_INCREMENTAL: 0
-      RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort
+      RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Zpanic_abort_tests -Cpanic=abort -Coverflow-checks=off
       RUSTDOCFLAGS: -Cpanic=abort
     runs-on: ubuntu-latest
     steps:
