@@ -91,4 +91,20 @@ mod tests {
             main_internal(vec!["program_path".to_string(), "1".to_string()].into_iter()).is_ok()
         );
     }
+
+    #[test]
+    fn test_program_error_from_parse_int_error() {
+        let parsed = "foo".parse::<u32>().unwrap_err();
+        let converted: ProgramError = parsed.clone().into();
+        assert!(matches!(converted, ProgramError::ParseIntError(inner) if inner == parsed));
+    }
+
+    #[test]
+    fn test_program_error_from_execution_error() {
+        let converted: ProgramError = ExecutionError::InvalidDay(26).into();
+        assert!(matches!(
+            converted,
+            ProgramError::ExecutionError(ExecutionError::InvalidDay(26))
+        ));
+    }
 }
