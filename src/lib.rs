@@ -11,6 +11,19 @@ mod day09;
 mod day10;
 mod day11;
 mod day12;
+mod day13;
+mod day14;
+mod day15;
+mod day16;
+mod day17;
+mod day18;
+mod day19;
+mod day20;
+mod day21;
+mod day22;
+mod day23;
+mod day24;
+mod day25;
 
 use std::fmt::Display;
 
@@ -28,6 +41,19 @@ pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
         10 => call_with(day10::run, func),
         11 => call_with(day11::run, func),
         12 => call_with(day12::run, func),
+        13 => call_with(day13::run, func),
+        14 => call_with(day14::run, func),
+        15 => call_with(day15::run, func),
+        16 => call_with(day16::run, func),
+        17 => call_with(day17::run, func),
+        18 => call_with(day18::run, func),
+        19 => call_with(day19::run, func),
+        20 => call_with(day20::run, func),
+        21 => call_with(day21::run, func),
+        22 => call_with(day22::run, func),
+        23 => call_with(day23::run, func),
+        24 => call_with(day24::run, func),
+        25 => call_with(day25::run, func),
         _ => {
             panic!("Invalid day {} passed to run_with function", day);
         }
@@ -51,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_all_solutions_run_without_panic() {
-        (1..=12).for_each(|day| run_with(day, |_, _| {}));
+        (1..=25).for_each(|day| run_with(day, |_, _| {}));
     }
 
     #[test]
