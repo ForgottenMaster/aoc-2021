@@ -56,9 +56,7 @@ mod tests {
     // We can't mock the environment arguments though so we expect this to return an error.
     #[test]
     fn test_main() {
-        let calculated = main().unwrap_err();
-        let expected = ProgramError::InvalidArgument;
-        assert_eq!(calculated, expected);
+        assert!(main().is_err());
     }
 
     #[test]
