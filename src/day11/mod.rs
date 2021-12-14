@@ -2,7 +2,7 @@ mod grid;
 
 use {grid::Grid, std::fs::read_to_string};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (u32, u32) {

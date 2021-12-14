@@ -7,7 +7,7 @@ use {
     },
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (impl Display, impl Display) {

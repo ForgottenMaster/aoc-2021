@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {
     InvalidDay(usize),
     Day01(super::day01::ExecutionError),

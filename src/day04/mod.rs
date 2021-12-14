@@ -13,7 +13,7 @@ use {
     std::{fmt::Display, fs::File, io::BufReader},
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (impl Display, impl Display) {

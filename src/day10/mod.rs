@@ -8,7 +8,7 @@ use {
     line_parser::LineParser, line_type::LineType, std::fs::read_to_string, token_type::TokenType,
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (u32, u64) {

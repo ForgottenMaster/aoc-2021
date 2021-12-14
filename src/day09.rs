@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs::read_to_string};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (u32, u32) {

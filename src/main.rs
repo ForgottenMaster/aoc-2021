@@ -6,7 +6,7 @@ use {
 /// Used to create a homogenous return type for the program execution rather than invoking a panic.
 /// This allows us to propagate correctly up the stack and out of the main function and allows for
 /// us to ensure code coverage.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum ProgramError {
     ParseIntError(ParseIntError), // error from parsing the solution number to run
     InvalidArgument,              // error caused by no argument being found at the command line
@@ -56,15 +56,15 @@ mod tests {
     // We can't mock the environment arguments though so we expect this to return an error.
     #[test]
     fn test_main() {
-        assert!(matches!(main().unwrap_err(), ProgramError::InvalidArgument));
+        assert_eq!(main().unwrap_err(), ProgramError::InvalidArgument);
     }
 
     #[test]
     fn test_main_internal_invalid_argument() {
-        assert!(matches!(
+        assert_eq!(
             main_internal(vec!["program_path".to_string()].into_iter()).unwrap_err(),
             ProgramError::InvalidArgument
-        ));
+        );
     }
 
     #[test]
@@ -96,15 +96,15 @@ mod tests {
     fn test_program_error_from_parse_int_error() {
         let parsed = "foo".parse::<u32>().unwrap_err();
         let converted: ProgramError = parsed.clone().into();
-        assert!(matches!(converted, ProgramError::ParseIntError(inner) if inner == parsed));
+        assert_eq!(converted, ProgramError::ParseIntError(parsed));
     }
 
     #[test]
     fn test_program_error_from_execution_error() {
         let converted: ProgramError = ExecutionError::InvalidDay(26).into();
-        assert!(matches!(
+        assert_eq!(
             converted,
             ProgramError::ExecutionError(ExecutionError::InvalidDay(26))
-        ));
+        );
     }
 }

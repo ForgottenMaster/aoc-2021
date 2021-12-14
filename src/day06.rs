@@ -9,7 +9,7 @@ use std::{
 const RESET_TO: u8 = 6;
 const SPAWN_AT: u8 = 8;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExecutionError {}
 
 pub fn run() -> (impl Display, impl Display) {
