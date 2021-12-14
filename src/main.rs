@@ -56,55 +56,55 @@ mod tests {
     // We can't mock the environment arguments though so we expect this to return an error.
     #[test]
     fn test_main() {
-        assert_eq!(main().unwrap_err(), ProgramError::InvalidArgument);
+        let calculated = main().unwrap_err();
+        let expected = ProgramError::InvalidArgument;
+        assert_eq!(calculated, expected);
     }
 
     #[test]
     fn test_main_internal_invalid_argument() {
-        assert_eq!(
-            main_internal(vec!["program_path".to_string()].into_iter()).unwrap_err(),
-            ProgramError::InvalidArgument
-        );
+        let calculated = main_internal(vec!["program_path".to_string()].into_iter()).unwrap_err();
+        let expected = ProgramError::InvalidArgument;
+        assert_eq!(calculated, expected);
     }
 
     #[test]
     fn test_main_internal_parse_int_error() {
-        assert!(matches!(
+        let calculated =
             main_internal(vec!["program_path".to_string(), "foo".to_string()].into_iter())
-                .unwrap_err(),
-            ProgramError::ParseIntError(..)
-        ));
+                .unwrap_err();
+        let matches = matches!(calculated, ProgramError::ParseIntError(..));
+        assert!(matches);
     }
 
     #[test]
     fn test_main_internal_execution_error() {
-        assert!(matches!(
+        let calculated =
             main_internal(vec!["program_path".to_string(), "26".to_string()].into_iter())
-                .unwrap_err(),
-            ProgramError::ExecutionError(..)
-        ));
+                .unwrap_err();
+        let expected = ProgramError::ExecutionError(ExecutionError::InvalidDay(26));
+        assert_eq!(calculated, expected);
     }
 
     #[test]
     fn test_main_internal_success() {
-        assert!(
-            main_internal(vec!["program_path".to_string(), "1".to_string()].into_iter()).is_ok()
-        );
+        let calculated =
+            main_internal(vec!["program_path".to_string(), "1".to_string()].into_iter()).is_ok();
+        assert!(calculated);
     }
 
     #[test]
     fn test_program_error_from_parse_int_error() {
         let parsed = "foo".parse::<u32>().unwrap_err();
         let converted: ProgramError = parsed.clone().into();
-        assert_eq!(converted, ProgramError::ParseIntError(parsed));
+        let expected = ProgramError::ParseIntError(parsed);
+        assert_eq!(converted, expected);
     }
 
     #[test]
     fn test_program_error_from_execution_error() {
         let converted: ProgramError = ExecutionError::InvalidDay(26).into();
-        assert_eq!(
-            converted,
-            ProgramError::ExecutionError(ExecutionError::InvalidDay(26))
-        );
+        let expected = ProgramError::ExecutionError(ExecutionError::InvalidDay(26));
+        assert_eq!(converted, expected);
     }
 }
