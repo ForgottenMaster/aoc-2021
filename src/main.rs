@@ -3,25 +3,25 @@ use {
     std::{env::args, time::Instant},
 };
 
-fn main() {
-    main_internal(args());
-}
-
 fn main_internal(args: impl Iterator<Item = String>) {
     if let Some(solution_number) = args.skip(1).next() {
         let start_time = Instant::now();
-        let solution_number = solution_number.parse::<usize>();
-        let solution_number =
-            solution_number.expect("Couldn't parse the provided solution number as an integer.");
-        run_with(solution_number, |part_1, part_2| {
-            let elapsed = start_time.elapsed().as_micros();
-            println!("Part 1 => {}", part_1);
-            println!("Part 2 => {}", part_2);
-            println!("Took {} microseconds", elapsed);
-        });
+        run_with(
+            solution_number.parse::<usize>().unwrap(),
+            |part_1, part_2| {
+                let elapsed = start_time.elapsed().as_micros();
+                println!("Part 1 => {}", part_1);
+                println!("Part 2 => {}", part_2);
+                println!("Took {} microseconds", elapsed);
+            },
+        );
     } else {
         panic!("Argument list to program requires an entry indicating the day number to run.");
     }
+}
+
+fn main() {
+    main_internal(args());
 }
 
 #[cfg(test)]
