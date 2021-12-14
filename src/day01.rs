@@ -7,6 +7,9 @@ use {
     },
 };
 
+#[derive(Debug)]
+pub enum ExecutionError {}
+
 pub fn run() -> (impl Display, impl Display) {
     let file = File::open("input/day01.txt").expect("Could not open file.");
     let mut reader = BufReader::new(file);

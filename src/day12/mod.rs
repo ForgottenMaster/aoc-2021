@@ -14,6 +14,9 @@ use {
     },
 };
 
+#[derive(Debug)]
+pub enum ExecutionError {}
+
 pub fn run() -> (usize, usize) {
     let content = read_to_string("input/day12.txt").expect("Could not open file for input.");
     count_paths_through_cave(content.trim().lines())
