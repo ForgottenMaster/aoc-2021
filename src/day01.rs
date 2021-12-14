@@ -2,16 +2,15 @@ use {
     crate::common::iter::MapWindowsExt,
     std::{
         fmt::Display,
-        fs::File,
-        io::{BufRead, BufReader, Seek},
+        io::{BufRead, BufReader},
     },
 };
 
-pub fn run() -> (impl Display, impl Display) {
-    let file = File::open("input/day01.txt").expect("Could not open file.");
-    let mut reader = BufReader::new(file);
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    let input = input.as_bytes();
+    let mut reader = BufReader::new(input);
     let part_1 = calculate_number_of_increases(&mut reader, 1);
-    reader.rewind().expect("Could not rewind the reader.");
+    let mut reader = BufReader::new(input);
     let part_2 = calculate_number_of_increases(&mut reader, 3);
     (part_1, part_2)
 }
@@ -33,23 +32,11 @@ fn calculate_number_of_increases(reader: impl BufRead, window_size: usize) -> u3
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use {super::super::example_input::EXAMPLE_INPUT, super::*};
 
     #[test]
     fn test_example_part_1() {
-        const INPUT: &[u8] = r#"
-        199
-        200
-        208
-        210
-        200
-        207
-        240
-        269
-        260
-        263
-        "#
-        .as_bytes();
+        const INPUT: &[u8] = EXAMPLE_INPUT[0].as_bytes();
         const EXPECTED: u32 = 7;
         let calculated = calculate_number_of_increases(INPUT, 1);
         assert_eq!(calculated, EXPECTED);
@@ -57,19 +44,7 @@ mod tests {
 
     #[test]
     fn test_example_part_2() {
-        const INPUT: &[u8] = r#"
-            199
-            200
-            208
-            210
-            200
-            207
-            240
-            269
-            260
-            263
-            "#
-        .as_bytes();
+        const INPUT: &[u8] = EXAMPLE_INPUT[0].as_bytes();
         const EXPECTED: u32 = 5;
         let calculated = calculate_number_of_increases(INPUT, 3);
         assert_eq!(calculated, EXPECTED);

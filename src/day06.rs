@@ -1,7 +1,6 @@
 use std::{
     collections::HashMap,
     fmt::Display,
-    fs::File,
     io::{BufRead, BufReader},
     num::ParseIntError,
 };
@@ -9,9 +8,9 @@ use std::{
 const RESET_TO: u8 = 6;
 const SPAWN_AT: u8 = 8;
 
-pub fn run() -> (impl Display, impl Display) {
-    let file = File::open("input/day06.txt").expect("Could not open file.");
-    let reader = BufReader::new(file);
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    let input = input.as_bytes();
+    let reader = BufReader::new(input);
     let mut fish_counts =
         read_lanternfish_counts(reader).expect("Could not read lanternfish counts from file.");
     simulate_days(&mut fish_counts, 80);
@@ -24,8 +23,11 @@ pub fn run() -> (impl Display, impl Display) {
 fn read_lanternfish_counts(reader: impl BufRead) -> Result<HashMap<u8, u128>, ParseIntError> {
     let mut fish_counts = HashMap::new();
     for line in reader.lines().filter_map(|line| Some(line.ok()?)) {
-        for elem in line.trim().split(",") {
-            *fish_counts.entry(elem.trim().parse::<u8>()?).or_insert(0) += 1;
+        let line = line.trim();
+        if !line.is_empty() {
+            for elem in line.split(",") {
+                *fish_counts.entry(elem.trim().parse::<u8>()?).or_insert(0) += 1;
+            }
         }
     }
     Ok(fish_counts)

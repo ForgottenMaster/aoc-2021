@@ -9,14 +9,12 @@ use {
             hash_map::DefaultHasher,
             {HashMap, HashSet},
         },
-        fs::read_to_string,
         hash::{Hash, Hasher},
     },
 };
 
-pub fn run() -> (usize, usize) {
-    let content = read_to_string("input/day12.txt").expect("Could not open file for input.");
-    count_paths_through_cave(content.trim().lines())
+pub fn run(input: &str) -> (usize, usize) {
+    count_paths_through_cave(input.trim().lines())
 }
 
 /// Takes an iterator over lines of text which will be parsed as the links of the graph.

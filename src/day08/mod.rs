@@ -1,13 +1,9 @@
 mod segment_label;
 
-use {
-    segment_label::SegmentLabel,
-    std::{fmt::Display, fs::read_to_string},
-};
+use {segment_label::SegmentLabel, std::fmt::Display};
 
-pub fn run() -> (impl Display, impl Display) {
-    let file_content = read_to_string("input/day08.txt").expect("Could not read contents of file.");
-    process_content(&file_content)
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    process_content(input)
 }
 
 fn process_content(string: &str) -> (u32, u32) {
@@ -122,7 +118,7 @@ fn parse_bitmask_from_string(string: &str) -> u8 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use {super::super::example_input::EXAMPLE_INPUT, super::*};
 
     #[test]
     fn test_extract_bitmask_with_len_valid() {
@@ -203,36 +199,14 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        const INPUT: &str = r#"
-        be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
-        edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
-        fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
-        fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
-        aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
-        fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
-        dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
-        bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
-        egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
-        gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
-        "#;
+        const INPUT: &str = EXAMPLE_INPUT[7];
         const EXPECTED: u32 = 26;
         assert_eq!(process_content(INPUT).0, EXPECTED);
     }
 
     #[test]
     fn test_part_2_example() {
-        const INPUT: &str = r#"
-        be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
-        edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
-        fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
-        fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
-        aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
-        fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
-        dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
-        bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
-        egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
-        gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
-        "#;
+        const INPUT: &str = EXAMPLE_INPUT[7];
         const EXPECTED: u32 = 61229;
         assert_eq!(process_content(INPUT).1, EXPECTED);
     }

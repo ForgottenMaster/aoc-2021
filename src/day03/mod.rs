@@ -3,12 +3,12 @@ mod read_diagnostic_report_error;
 
 use {
     diagnostic_report::DiagnosticReport,
-    std::{fmt::Display, fs::File, io::BufReader, iter::repeat},
+    std::{fmt::Display, io::BufReader, iter::repeat},
 };
 
-pub fn run() -> (impl Display, impl Display) {
-    let file = File::open("input/day03.txt").expect("Can't open file.");
-    let reader = BufReader::new(file);
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    let input = input.as_bytes();
+    let reader = BufReader::new(input);
     let diagnostic_report = DiagnosticReport::<u32>::new_from_bufread(reader)
         .expect("Could not parse DiagnosticReport from input file.")
         .unwrap();

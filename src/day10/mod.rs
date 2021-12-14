@@ -4,13 +4,10 @@ mod opening_type;
 mod token;
 mod token_type;
 
-use {
-    line_parser::LineParser, line_type::LineType, std::fs::read_to_string, token_type::TokenType,
-};
+use {line_parser::LineParser, line_type::LineType, token_type::TokenType};
 
-pub fn run() -> (u32, u64) {
-    let input = read_to_string("input/day10.txt").expect("Could not read input file.");
-    let (part_1, part_2) = calculate_scores(&input);
+pub fn run(input: &str) -> (u32, u64) {
+    let (part_1, part_2) = calculate_scores(input);
     (part_1, part_2)
 }
 
@@ -75,7 +72,7 @@ fn calculate_total_autocomplete_score(input: impl Iterator<Item = TokenType>) ->
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use {super::super::example_input::EXAMPLE_INPUT, super::*};
 
     #[test]
     fn test_parse_lines() {
@@ -99,18 +96,7 @@ mod tests {
 
     #[test]
     fn test_part_1_example_parsing() {
-        const INPUT: &str = r#"
-        [({(<(())[]>[[{[]{<()<>>
-        [(()[<>])]({[<{<<[]>>(
-        {([(<{}[<>[]}>{[]{[(<()>
-        (((({<>}<{<{<>}{[]{[]{}
-        [[<[([]))<([[{}[[()]]]
-        [{[{({}]{}}([{[{{{}}([]
-        {<[[]]>}<{[{[{[]{()[[[]
-        [<(<(<(<{}))><([]([]()
-        <{([([[(<>()){}]>(<<{{
-        <{([{{}}[<[[[<>{}]]]>[]]
-        "#;
+        const INPUT: &str = EXAMPLE_INPUT[9];
         let expected = vec![
             LineType::Corrupted {
                 expected: TokenType::SquareBracket,
@@ -159,18 +145,7 @@ mod tests {
 
     #[test]
     fn test_example_score_calculations() {
-        const INPUT: &str = r#"
-        [({(<(())[]>[[{[]{<()<>>
-        [(()[<>])]({[<{<<[]>>(
-        {([(<{}[<>[]}>{[]{[(<()>
-        (((({<>}<{<{<>}{[]{[]{}
-        [[<[([]))<([[{}[[()]]]
-        [{[{({}]{}}([{[{{{}}([]
-        {<[[]]>}<{[{[{[]{()[[[]
-        [<(<(<(<{}))><([]([]()
-        <{([([[(<>()){}]>(<<{{
-        <{([{{}}[<[[[<>{}]]]>[]]
-        "#;
+        const INPUT: &str = EXAMPLE_INPUT[9];
         const EXPECTED: (u32, u64) = (26397, 288957);
         assert_eq!(calculate_scores(INPUT), EXPECTED);
     }

@@ -1,13 +1,12 @@
 use std::{
     collections::HashMap,
     fmt::Display,
-    fs::File,
     io::{BufRead, BufReader},
 };
 
-pub fn run() -> (impl Display, impl Display) {
-    let file = File::open("input/day07.txt").expect("Could not open file.");
-    let reader = BufReader::new(file);
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    let input = input.as_bytes();
+    let reader = BufReader::new(input);
     let (crab_position_counts, min, max) = read_crab_position_counts(reader);
     let part_1 = calculate_minimal_fuel_cost_to_align(&crab_position_counts, min, max, 0);
     let part_2 = calculate_minimal_fuel_cost_to_align(&crab_position_counts, min, max, 1);

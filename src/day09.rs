@@ -1,8 +1,7 @@
-use std::{collections::HashSet, fs::read_to_string};
+use std::collections::HashSet;
 
-pub fn run() -> (u32, u32) {
-    let input = read_to_string("input/day09.txt").expect("Can't read contents of input file.");
-    let (grid, pitch) = extract_numeric_grid(&input);
+pub fn run(input: &str) -> (u32, u32) {
+    let (grid, pitch) = extract_numeric_grid(input);
     let low_points = extract_low_points(&grid, pitch);
     let part_1 = low_points.iter().map(|(elem, _)| (elem + 1) as u32).sum();
     let mut flooded_coordinates = HashSet::with_capacity(grid.len()); // worst case is that the entire grid is flooded (not the case though).
@@ -125,7 +124,7 @@ fn extract_low_points(grid: &[u8], pitch: usize) -> Vec<(u8, (usize, usize))> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use {super::super::example_input::EXAMPLE_INPUT, super::*};
 
     #[test]
     fn test_extract_numeric_grid_empty() {
@@ -217,13 +216,7 @@ mod tests {
 
     #[test]
     fn test_calculate_basin_size() {
-        const INPUT: &str = r#"
-        2199943210
-        3987894921
-        9856789892
-        8767896789
-        9899965678
-        "#;
+        const INPUT: &str = EXAMPLE_INPUT[8];
         let (grid, pitch) = extract_numeric_grid(INPUT);
         let mut hs = HashSet::with_capacity(grid.len());
         assert_eq!(calculate_basin_size((0, 0), &grid, pitch, &mut hs), 3);

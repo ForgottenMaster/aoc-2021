@@ -13,14 +13,13 @@ use {
     folder_part_2::FolderPart2,
     std::{
         fmt::Display,
-        fs::File,
         io::{BufRead, BufReader},
     },
 };
 
-pub fn run() -> (impl Display, impl Display) {
-    let file = File::open("input/day02.txt").expect("Could not open file.");
-    let reader = BufReader::new(file);
+pub fn run(input: &str) -> (impl Display, impl Display) {
+    let input = input.as_bytes();
+    let reader = BufReader::new(input);
     let (part_1, part_2) = calculate_distance_travelled(reader, FolderBoth::default());
     (part_1, part_2)
 }
@@ -44,19 +43,11 @@ type FolderBoth = FolderComposite<FolderPart1, FolderPart2>;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use {super::super::example_input::EXAMPLE_INPUT, super::*};
 
     #[test]
     fn test_example_part_1() {
-        const INPUT: &[u8] = r#"
-        forward 5
-        down 5
-        forward 8
-        up 3
-        down 8
-        forward 2
-        "#
-        .as_bytes();
+        const INPUT: &[u8] = EXAMPLE_INPUT[1].as_bytes();
         const EXPECTED: u32 = 150;
         let calculated = calculate_distance_travelled(INPUT, FolderPart1::default());
         assert_eq!(calculated, EXPECTED);
@@ -64,15 +55,7 @@ mod tests {
 
     #[test]
     fn test_example_part_2() {
-        const INPUT: &[u8] = r#"
-        forward 5
-        down 5
-        forward 8
-        up 3
-        down 8
-        forward 2
-        "#
-        .as_bytes();
+        const INPUT: &[u8] = EXAMPLE_INPUT[1].as_bytes();
         const EXPECTED: u32 = 900;
         let calculated = calculate_distance_travelled(INPUT, FolderPart2::default());
         assert_eq!(calculated, EXPECTED);
