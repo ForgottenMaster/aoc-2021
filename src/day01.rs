@@ -47,7 +47,8 @@ mod tests {
         269
         260
         263
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: u32 = 7;
         let calculated = calculate_number_of_increases(INPUT, 1);
         assert_eq!(calculated, EXPECTED);
@@ -66,7 +67,8 @@ mod tests {
         269
         260
         263
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: u32 = 5;
         let calculated = calculate_number_of_increases(INPUT, 3);
         assert_eq!(calculated, EXPECTED);

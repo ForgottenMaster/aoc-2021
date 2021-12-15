@@ -78,7 +78,8 @@ mod tests {
         3,4 -> 1,4
         0,0 -> 8,8
         5,5 -> 8,2
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: usize = 5;
         let segments = load_line_segments(INPUT);
         let counts = get_point_counts(segments.iter().filter(|line| match line {
@@ -102,7 +103,8 @@ mod tests {
         3,4 -> 1,4
         0,0 -> 8,8
         5,5 -> 8,2
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: usize = 12;
         let segments = load_line_segments(INPUT);
         let counts = get_point_counts(segments.iter());

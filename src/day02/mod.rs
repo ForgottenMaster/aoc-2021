@@ -54,7 +54,8 @@ mod tests {
         up 3
         down 8
         forward 2
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: u32 = 150;
         let calculated = calculate_distance_travelled(INPUT, FolderPart1::default());
         assert_eq!(calculated, EXPECTED);
@@ -69,7 +70,8 @@ mod tests {
         up 3
         down 8
         forward 2
-        "#.as_bytes();
+        "#
+        .as_bytes();
         const EXPECTED: u32 = 900;
         let calculated = calculate_distance_travelled(INPUT, FolderPart2::default());
         assert_eq!(calculated, EXPECTED);

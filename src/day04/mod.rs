@@ -49,7 +49,8 @@ mod tests {
         18  8 23 26 20
         22 11 13  6  5
         2  0 12  3  7
-        "#.as_bytes();
+        "#
+        .as_bytes();
         let mut game = BingoGame::new_from_bufread(INPUT).unwrap();
         assert_eq!(game.calculate_part_1_answer(), 4512);
     }
