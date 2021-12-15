@@ -61,9 +61,11 @@ fn calculate_fuel_required_for_position(
             (*position, target_position)
         };
         let diff = max - min;
-        let allowed_fuel = (maximum_allowed_fuel - total_fuel) / count;
+        let allowed_fuel_overestimate =
+            maximum_allowed_fuel - std::cmp::min(total_fuel, maximum_allowed_fuel);
         total_fuel +=
-            calculate_fuel_cost_from_distance(diff, fuel_acceleration, allowed_fuel) * count
+            calculate_fuel_cost_from_distance(diff, fuel_acceleration, allowed_fuel_overestimate)
+                * count
         // required as we're shifting all crabs at that position
     });
     total_fuel
