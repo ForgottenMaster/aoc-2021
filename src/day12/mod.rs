@@ -67,15 +67,17 @@ fn get_hashes_of_paths_through_cave(
             let mut hasher = hasher.clone();
             node.hash(&mut hasher);
             match node {
-                Node::End => { path_hashes.insert(hasher.finish()); },
+                Node::End => {
+                    path_hashes.insert(hasher.finish());
+                }
                 Node::LargeCave(_) | Node::SmallCave(_) => {
                     let mut visited = visited.clone();
                     if let Node::SmallCave(hash) = node {
                         *visited.entry(*hash).or_default() += 1;
                     }
                     stack.push(((*node).clone(), visited, hasher));
-                },
-                _ => panic!("Shouldn't have got here as the start node should be filtered out as a valid transition target.")
+                }
+                Node::Start => {}
             }
         }
     }
@@ -246,7 +248,7 @@ mod tests {
 
     #[test]
     fn test_parse_all_links_empty() {
-        assert_eq!(parse_all_links("".lines()), HashMap::new());
+        assert_eq!(parse_all_links("      ".lines()), HashMap::new());
     }
 
     #[test]
