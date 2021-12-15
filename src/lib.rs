@@ -65,11 +65,9 @@ fn call_with<'a, T: Display + 'a, U: Display + 'a>(
     day: usize,
     func: impl Fn(&dyn Display, &dyn Display) + 'a,
 ) {
-    let tuple = {
-        let string =
-            read_to_string(format!("input/day{:02}.txt", day)).expect("Couldn't open input file.");
-        run(&string)
-    };
+    let string =
+        read_to_string(format!("input/day{:02}.txt", day)).expect("Couldn't open input file.");
+    let tuple = run(&string);
     func(&tuple.0, &tuple.1)
 }
 
