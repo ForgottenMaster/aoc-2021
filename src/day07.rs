@@ -51,29 +51,40 @@ fn calculate_fuel_required_for_position(
     position_counts: &HashMap<u32, u32>,
     target_position: u32,
     fuel_acceleration: u32,
+    maximum_allowed_fuel: u32,
 ) -> u32 {
-    position_counts
-        .into_iter()
-        .map(|(position, count)| {
-            let (min, max) = if *position > target_position {
-                (target_position, *position)
-            } else {
-                (*position, target_position)
-            };
-            let diff = max - min;
-            calculate_fuel_cost_from_distance(diff, fuel_acceleration) * count // required as we're shifting all crabs at that position
-        })
-        .sum()
+    let mut total_fuel = 0;
+    position_counts.into_iter().for_each(|(position, count)| {
+        let (min, max) = if *position > target_position {
+            (target_position, *position)
+        } else {
+            (*position, target_position)
+        };
+        let diff = max - min;
+        let allowed_fuel = (maximum_allowed_fuel - total_fuel) / count;
+        total_fuel +=
+            calculate_fuel_cost_from_distance(diff, fuel_acceleration, allowed_fuel) * count
+        // required as we're shifting all crabs at that position
+    });
+    total_fuel
 }
 
-fn calculate_fuel_cost_from_distance(steps: u32, fuel_acceleration: u32) -> u32 {
-    (0..steps)
-        .scan(1, |cost, _| {
-            let price = *cost;
-            *cost += fuel_acceleration;
-            Some(price)
-        })
-        .sum()
+fn calculate_fuel_cost_from_distance(
+    steps: u32,
+    fuel_acceleration: u32,
+    maximum_allowed_fuel: u32,
+) -> u32 {
+    let mut i = 0;
+    let mut total_fuel = 0;
+    let mut fuel_cost_per_unit = 1;
+
+    while total_fuel < maximum_allowed_fuel && i < steps {
+        total_fuel += fuel_cost_per_unit;
+        fuel_cost_per_unit += fuel_acceleration;
+        i += 1;
+    }
+
+    std::cmp::min(total_fuel, maximum_allowed_fuel)
 }
 
 /// Calculates the minimal fuel cost for arranging the crabs.
@@ -83,13 +94,19 @@ fn calculate_minimal_fuel_cost_to_align(
     max_pos: u32,
     fuel_acceleration: u32,
 ) -> u32 {
-    (min_pos..=max_pos)
-        .into_iter()
-        .map(|position| {
-            calculate_fuel_required_for_position(position_counts, position, fuel_acceleration)
-        })
-        .min()
-        .unwrap()
+    let mut minimal_fuel = u32::MAX;
+    (min_pos..=max_pos).into_iter().for_each(|position| {
+        minimal_fuel = std::cmp::min(
+            minimal_fuel,
+            calculate_fuel_required_for_position(
+                position_counts,
+                position,
+                fuel_acceleration,
+                minimal_fuel,
+            ),
+        );
+    });
+    minimal_fuel
 }
 
 #[cfg(test)]
@@ -116,7 +133,8 @@ mod tests {
             .collect::<HashMap<_, _>>();
         let input_position = 2;
         let expected = 37;
-        let calculated = calculate_fuel_required_for_position(&input_counts, input_position, 0);
+        let calculated =
+            calculate_fuel_required_for_position(&input_counts, input_position, 0, u32::MAX);
         assert_eq!(expected, calculated);
     }
 
@@ -127,7 +145,8 @@ mod tests {
             .collect::<HashMap<_, _>>();
         let input_position = 2;
         let expected = 206;
-        let calculated = calculate_fuel_required_for_position(&input_counts, input_position, 1);
+        let calculated =
+            calculate_fuel_required_for_position(&input_counts, input_position, 1, u32::MAX);
         assert_eq!(expected, calculated);
     }
 
@@ -153,17 +172,17 @@ mod tests {
 
     #[test]
     fn test_calculate_fuel_cost_from_distance_ramping() {
-        assert_eq!(calculate_fuel_cost_from_distance(3, 0), 3);
-        assert_eq!(calculate_fuel_cost_from_distance(3, 1), 6);
-        assert_eq!(calculate_fuel_cost_from_distance(10, 0), 10);
-        assert_eq!(calculate_fuel_cost_from_distance(10, 1), 55);
-        assert_eq!(calculate_fuel_cost_from_distance(11, 1), 66);
-        assert_eq!(calculate_fuel_cost_from_distance(4, 1), 10);
-        assert_eq!(calculate_fuel_cost_from_distance(5, 1), 15);
-        assert_eq!(calculate_fuel_cost_from_distance(1, 1), 1);
-        assert_eq!(calculate_fuel_cost_from_distance(2, 1), 3);
-        assert_eq!(calculate_fuel_cost_from_distance(9, 1), 45);
-        assert_eq!(calculate_fuel_cost_from_distance(0, 1), 0);
+        assert_eq!(calculate_fuel_cost_from_distance(3, 0, u32::MAX), 3);
+        assert_eq!(calculate_fuel_cost_from_distance(3, 1, u32::MAX), 6);
+        assert_eq!(calculate_fuel_cost_from_distance(10, 0, u32::MAX), 10);
+        assert_eq!(calculate_fuel_cost_from_distance(10, 1, u32::MAX), 55);
+        assert_eq!(calculate_fuel_cost_from_distance(11, 1, u32::MAX), 66);
+        assert_eq!(calculate_fuel_cost_from_distance(4, 1, u32::MAX), 10);
+        assert_eq!(calculate_fuel_cost_from_distance(5, 1, u32::MAX), 15);
+        assert_eq!(calculate_fuel_cost_from_distance(1, 1, u32::MAX), 1);
+        assert_eq!(calculate_fuel_cost_from_distance(2, 1, u32::MAX), 3);
+        assert_eq!(calculate_fuel_cost_from_distance(9, 1, u32::MAX), 45);
+        assert_eq!(calculate_fuel_cost_from_distance(0, 1, u32::MAX), 0);
     }
 
     #[test]
@@ -173,7 +192,8 @@ mod tests {
             .collect::<HashMap<_, _>>();
         let input_position = 5;
         let expected = 168;
-        let calculated = calculate_fuel_required_for_position(&input_counts, input_position, 1);
+        let calculated =
+            calculate_fuel_required_for_position(&input_counts, input_position, 1, u32::MAX);
         assert_eq!(expected, calculated);
     }
 }
