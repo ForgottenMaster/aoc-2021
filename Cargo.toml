@@ -11,4 +11,4 @@ name = "benchmark"
 harness = false
 
 [profile.test]
-opt-level=3
+opt-level=1
