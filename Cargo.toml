@@ -9,3 +9,6 @@ criterion = "0.3.5"
 [[bench]]
 name = "benchmark"
 harness = false
+
+[profile.test]
+opt-level=3

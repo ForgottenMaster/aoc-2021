@@ -124,7 +124,7 @@ fn extract_low_points(grid: &[u8], pitch: usize) -> Vec<(u8, (usize, usize))> {
 
 #[cfg(test)]
 mod tests {
-    use {super::super::example_input::EXAMPLE_INPUT, super::*};
+    use super::*;
 
     #[test]
     fn test_extract_numeric_grid_empty() {
@@ -216,7 +216,12 @@ mod tests {
 
     #[test]
     fn test_calculate_basin_size() {
-        const INPUT: &str = EXAMPLE_INPUT[8];
+        const INPUT: &str = r#"
+        2199943210
+        3987894921
+        9856789892
+        8767896789
+        9899965678"#;
         let (grid, pitch) = extract_numeric_grid(INPUT);
         let mut hs = HashSet::with_capacity(grid.len());
         assert_eq!(calculate_basin_size((0, 0), &grid, pitch, &mut hs), 3);

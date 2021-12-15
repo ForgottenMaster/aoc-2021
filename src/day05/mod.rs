@@ -63,11 +63,22 @@ fn count_intersections(counts: &HashMap<(u32, u32), u32>) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use {super::super::example_input::EXAMPLE_INPUT, super::*};
+    use super::*;
 
     #[test]
     fn test_part_1_example() {
-        const INPUT: &[u8] = EXAMPLE_INPUT[4].as_bytes();
+        const INPUT: &[u8] = r#"
+        0,9 -> 5,9
+        8,0 -> 0,8
+        9,4 -> 3,4
+        2,2 -> 2,1
+        7,0 -> 7,4
+        6,4 -> 2,0
+        0,9 -> 2,9
+        3,4 -> 1,4
+        0,0 -> 8,8
+        5,5 -> 8,2
+        "#.as_bytes();
         const EXPECTED: usize = 5;
         let segments = load_line_segments(INPUT);
         let counts = get_point_counts(segments.iter().filter(|line| match line {
@@ -80,7 +91,18 @@ mod tests {
 
     #[test]
     fn test_part_2_example() {
-        const INPUT: &[u8] = EXAMPLE_INPUT[4].as_bytes();
+        const INPUT: &[u8] = r#"
+        0,9 -> 5,9
+        8,0 -> 0,8
+        9,4 -> 3,4
+        2,2 -> 2,1
+        7,0 -> 7,4
+        6,4 -> 2,0
+        0,9 -> 2,9
+        3,4 -> 1,4
+        0,0 -> 8,8
+        5,5 -> 8,2
+        "#.as_bytes();
         const EXPECTED: usize = 12;
         let segments = load_line_segments(INPUT);
         let counts = get_point_counts(segments.iter());

@@ -24,15 +24,8 @@ mod day22;
 mod day23;
 mod day24;
 mod day25;
-mod example_input;
 
-use std::fmt::Display;
-
-#[cfg(test)]
-use example_input::EXAMPLE_INPUT;
-
-#[cfg(not(test))]
-use std::fs::read_to_string;
+use std::{fmt::Display, fs::read_to_string};
 
 pub fn run_with(day: usize, func: impl Fn(&dyn Display, &dyn Display)) {
     match day {
@@ -72,18 +65,11 @@ fn call_with<'a, T: Display + 'a, U: Display + 'a>(
     day: usize,
     func: impl Fn(&dyn Display, &dyn Display) + 'a,
 ) {
-    // either read from a file or take the example input depending on if we're in test
-    // config (don't want to read from actual file in test as there's no optimizations applied).
-    #[cfg(test)]
-    let tuple = run(&EXAMPLE_INPUT[day - 1]);
-
-    #[cfg(not(test))]
     let tuple = {
         let string =
             read_to_string(format!("input/day{:02}.txt", day)).expect("Couldn't open input file.");
         run(&string)
     };
-
     func(&tuple.0, &tuple.1)
 }
 

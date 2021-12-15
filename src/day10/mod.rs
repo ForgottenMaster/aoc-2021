@@ -72,7 +72,7 @@ fn calculate_total_autocomplete_score(input: impl Iterator<Item = TokenType>) ->
 
 #[cfg(test)]
 mod tests {
-    use {super::super::example_input::EXAMPLE_INPUT, super::*};
+    use super::*;
 
     #[test]
     fn test_parse_lines() {
@@ -96,7 +96,16 @@ mod tests {
 
     #[test]
     fn test_part_1_example_parsing() {
-        const INPUT: &str = EXAMPLE_INPUT[9];
+        const INPUT: &str = r#"[({(<(())[]>[[{[]{<()<>>
+            [(()[<>])]({[<{<<[]>>(
+            {([(<{}[<>[]}>{[]{[(<()>
+            (((({<>}<{<{<>}{[]{[]{}
+            [[<[([]))<([[{}[[()]]]
+            [{[{({}]{}}([{[{{{}}([]
+            {<[[]]>}<{[{[{[]{()[[[]
+            [<(<(<(<{}))><([]([]()
+            <{([([[(<>()){}]>(<<{{
+            <{([{{}}[<[[[<>{}]]]>[]]"#;
         let expected = vec![
             LineType::Corrupted {
                 expected: TokenType::SquareBracket,
@@ -145,7 +154,16 @@ mod tests {
 
     #[test]
     fn test_example_score_calculations() {
-        const INPUT: &str = EXAMPLE_INPUT[9];
+        const INPUT: &str = r#"[({(<(())[]>[[{[]{<()<>>
+            [(()[<>])]({[<{<<[]>>(
+            {([(<{}[<>[]}>{[]{[(<()>
+            (((({<>}<{<{<>}{[]{[]{}
+            [[<[([]))<([[{}[[()]]]
+            [{[{({}]{}}([{[{{{}}([]
+            {<[[]]>}<{[{[{[]{()[[[]
+            [<(<(<(<{}))><([]([]()
+            <{([([[(<>()){}]>(<<{{
+            <{([{{}}[<[[[<>{}]]]>[]]"#;
         const EXPECTED: (u32, u64) = (26397, 288957);
         assert_eq!(calculate_scores(INPUT), EXPECTED);
     }
