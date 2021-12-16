@@ -69,7 +69,7 @@ This table identifies which solutions have been completed and which are still ye
 |12|:heavy_check_mark:|:heavy_check_mark:|
 |13|:heavy_check_mark:|:heavy_check_mark:|
 |14|:heavy_check_mark:|:heavy_check_mark:|
-|15|:x:|:x:|
+|15|:heavy_check_mark:|:x:|
 |16|:x:|:x:|
 |17|:x:|:x:|
 |18|:x:|:x:|
