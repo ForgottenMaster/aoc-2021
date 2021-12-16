@@ -1,9 +1,11 @@
 use std::{cmp::Reverse, iter::repeat};
 
-pub fn run(input: &str) -> (u64, u32) {
+pub fn run(input: &str) -> (u64, u64) {
     let (nodes, stride) = parse_input(input);
     let part_1 = find_shortest_path_cost(&nodes, stride);
-    (part_1, 0)
+    let (nodes, stride) = expand_grid(nodes, stride);
+    let part_2 = find_shortest_path_cost(&nodes, stride);
+    (part_1, part_2)
 }
 
 /// Takes the input string which should consist of equal length lines
@@ -29,6 +31,36 @@ fn parse_input(input: &str) -> (Vec<u64>, usize) {
             }
             (cells, stride)
         })
+}
+
+/// Expands the grid by 5 times in either direction producing a new grid that's based on the initial one
+/// but with increased risk costs.
+fn expand_grid(nodes: Vec<u64>, stride: usize) -> (Vec<u64>, usize) {
+    let input_width = stride;
+    let input_height = nodes.len() / input_width;
+    let output_width = input_width * 5;
+    let output_height = input_height * 5;
+    let nodes = &nodes;
+    (
+        (0..output_height)
+            .flat_map(|y| {
+                (0..output_width).map(move |x| {
+                    let input_grid_x = x % input_width;
+                    let input_grid_y = y % input_height;
+                    let repetition_x = (x / input_width) as u64;
+                    let repetition_y = (y / input_height) as u64;
+                    let mut value =
+                        nodes[coordinate_to_index((input_grid_x, input_grid_y), input_width)]; // start with the associated value in the input grid
+                    (0..repetition_x + repetition_y).for_each(|_| {
+                        value %= 9;
+                        value += 1;
+                    }); // mod 9 + 1 will give us the result of wrapping back around to 1 due to mod 9 being 0.
+                    value
+                })
+            })
+            .collect(),
+        output_width,
+    )
 }
 
 /// Runs the A* algorithm over the grid, fixes the start at top-left and goal at bottom-right. Uses the
