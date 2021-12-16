@@ -1,15 +1,28 @@
-use std::{collections::HashMap, iter::once};
+use {crate::common::iter::MapWindowsExt, std::collections::HashMap};
 
-pub fn run(input: &str) -> (u32, u32) {
-    let (mut polymer_template, insertion_rules) = extract_data(input);
-    (0..10)
-        .for_each(|_| polymer_template = run_insertion_rules(&polymer_template, &insertion_rules));
-    let character_counts = count_characters(&polymer_template);
-    let mut sorted_character_counts = character_counts.into_iter().collect::<Vec<_>>();
-    sorted_character_counts.sort_by_key(|(_, count)| *count);
-    let part_1 =
-        sorted_character_counts.last().unwrap().1 - sorted_character_counts.first().unwrap().1;
-    (part_1, 0)
+pub fn run(input: &str) -> (u64, u64) {
+    let (polymer_template, insertion_rules) = extract_data(input);
+    let last_char = polymer_template.chars().rev().next().unwrap();
+    let mut pair_frequencies = generate_pair_mapping(&polymer_template);
+    (0..10).for_each(|_| {
+        pair_frequencies = apply_rules(&pair_frequencies, &insertion_rules);
+    });
+    let part_1 = {
+        get_difference_between_most_and_least_common(&mut count_letter_frequencies(
+            &pair_frequencies,
+            last_char,
+        ))
+    };
+    (0..30).for_each(|_| {
+        pair_frequencies = apply_rules(&pair_frequencies, &insertion_rules);
+    });
+    let part_2 = {
+        get_difference_between_most_and_least_common(&mut count_letter_frequencies(
+            &pair_frequencies,
+            last_char,
+        ))
+    };
+    (part_1, part_2)
 }
 
 /// Parses the input string into both a polymer template string and a HashMap containing
@@ -31,43 +44,60 @@ fn extract_data(input: &str) -> (String, HashMap<(char, char), char>) {
     (polymer_template, insertion_rules)
 }
 
-/// Runs a single rewriting of the insertion rules into the polymer template. All insertions
-/// occur simultaneously.
-fn run_insertion_rules(input: &str, rules: &HashMap<(char, char), char>) -> String {
-    // we can make an "insertion iterator" by making an iterator that is the same length of the input
-    // string and pairing each character of the input string up with a character that should come before
-    // it in the new string (the inserted character). We'll use '\0' for no insertion and it can be
-    // filtered out later. We can use scan in order to create the insertion iterator so we can remember the
-    // previous character.
-    let insertion_iter = input.chars().scan('\0', |previous, current| {
-        let old = *previous;
-        *previous = current;
-        Some(if let Some(inserted_char) = rules.get(&(old, current)) {
-            *inserted_char
-        } else {
-            '\0'
-        })
-    });
-
-    // Next, we zip this insertion iterator with the original string, and use a flat map to flatten the stream
-    // placing the inserted characters before the original ones. Finally filter to remove any '\0' since they
-    // represent the "empty character" and shouldn't appear.
-    let character_iter = input
+/// Runs through each window of size 2 in the string and counts the number of each pair
+/// into a HashMap.
+fn generate_pair_mapping(input: &str) -> HashMap<(char, char), u64> {
+    let mut hm = HashMap::with_capacity(input.len());
+    input
         .chars()
-        .zip(insertion_iter)
-        .flat_map(|(current, previous)| once(previous).chain(once(current)))
-        .filter(|elem| *elem != '\0');
-
-    // Finally we can collect into a new string to return.
-    character_iter.collect()
+        .map_windows(2, |window: &[char]| (window[0], window[1]))
+        .for_each(|tuple| {
+            *hm.entry(tuple).or_default() += 1;
+        });
+    hm
 }
 
-/// Counts the characters in the given string and returns a HashMap of character counts.
-fn count_characters(input: &str) -> HashMap<char, u32> {
-    input.chars().fold(HashMap::new(), |mut hm, elem| {
-        *hm.entry(elem).or_default() += 1;
-        hm
-    })
+/// Applies the rules to given pair mapping, this simply runs through each pair and
+/// knows that the insertion produces equal amounts of 2 pairs (equal to the count of the
+/// original pair).
+fn apply_rules(
+    pair_frequencies: &HashMap<(char, char), u64>,
+    rules: &HashMap<(char, char), char>,
+) -> HashMap<(char, char), u64> {
+    let mut new_frequencies = HashMap::with_capacity(rules.len());
+    pair_frequencies.into_iter().for_each(|(tuple, count)| {
+        let char_1 = tuple.0;
+        let char_2 = *rules.get(&tuple).unwrap(); // assume the rules are complete.
+        let char_3 = tuple.1;
+        *new_frequencies.entry((char_1, char_2)).or_default() += count;
+        *new_frequencies.entry((char_2, char_3)).or_default() += count;
+    });
+    new_frequencies
+}
+
+/// When we count the letter frequencies, we'll only take the first letter of each pair to count
+/// since each letter will be in 2 pairs and shouldn't be counted twice. The very last letter of the polymer
+/// however isn't counted at all in that case, but because insertions always push the last letter to the end
+/// we can just factor that in.
+fn count_letter_frequencies(
+    pair_frequencies: &HashMap<(char, char), u64>,
+    final_char: char,
+) -> Vec<(char, u64)> {
+    let mut letter_frequencies = HashMap::with_capacity(pair_frequencies.len()); // better to overestimate capacity and only allocate once.
+    pair_frequencies
+        .into_iter()
+        .for_each(|((character, _), count)| {
+            *letter_frequencies.entry(*character).or_default() += count;
+        });
+    *letter_frequencies.entry(final_char).or_default() += 1;
+    letter_frequencies.into_iter().collect()
+}
+
+/// Function that takes the list of letter frequencies and sorts them, before calculating the difference between the
+/// most common (last) and least common (first) letters.
+fn get_difference_between_most_and_least_common(letter_frequencies: &mut [(char, u64)]) -> u64 {
+    letter_frequencies.sort_by_key(|(_, count)| *count);
+    letter_frequencies.last().unwrap().1 - letter_frequencies.first().unwrap().1
 }
 
 #[cfg(test)]
@@ -101,51 +131,76 @@ mod tests {
     }
 
     #[test]
-    fn test_run_insertion_rules() {
-        const INPUT: &str = r#"
-        NNCB
-
-        CH -> B
-        HH -> N
-        CB -> H
-        NH -> C
-        HB -> C
-        HC -> B
-        HN -> C
-        NN -> C
-        BH -> H
-        NC -> B
-        NB -> B
-        BN -> B
-        BB -> N
-        BC -> B
-        CC -> N
-        CN -> C
-        "#;
-        let (polymer_template, insertion_rules) = extract_data(INPUT);
-        const AFTER_STEP_1: &str = "NCNBCHB";
-        const AFTER_STEP_2: &str = "NBCCNBBBCBHCB";
-        const AFTER_STEP_3: &str = "NBBBCNCCNBBNBNBBCHBHHBCHB";
-        const AFTER_STEP_4: &str = "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB";
-        let polymer_template = run_insertion_rules(&polymer_template, &insertion_rules);
-        assert_eq!(polymer_template, AFTER_STEP_1);
-        let polymer_template = run_insertion_rules(&polymer_template, &insertion_rules);
-        assert_eq!(polymer_template, AFTER_STEP_2);
-        let polymer_template = run_insertion_rules(&polymer_template, &insertion_rules);
-        assert_eq!(polymer_template, AFTER_STEP_3);
-        let polymer_template = run_insertion_rules(&polymer_template, &insertion_rules);
-        assert_eq!(polymer_template, AFTER_STEP_4);
+    fn test_generate_pair_mapping() {
+        const INPUT: &str = "NBCCNBBBCBHCB";
+        let mut hm = HashMap::new();
+        hm.insert(('N', 'B'), 2);
+        hm.insert(('B', 'C'), 2);
+        hm.insert(('C', 'C'), 1);
+        hm.insert(('C', 'N'), 1);
+        hm.insert(('B', 'B'), 2);
+        hm.insert(('C', 'B'), 2);
+        hm.insert(('B', 'H'), 1);
+        hm.insert(('H', 'C'), 1);
+        let calculated = generate_pair_mapping(INPUT);
+        assert_eq!(calculated, hm);
     }
 
     #[test]
-    fn test_count_characters() {
-        const INPUT: &str = "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB";
-        let mut hm = HashMap::new();
-        hm.insert('N', 11);
-        hm.insert('B', 23);
-        hm.insert('C', 10);
-        hm.insert('H', 5);
-        let calculated = count_characters(INPUT);
-        assert_eq!(calculated, hm);
+    fn test_apply_rules() {
+        let mut hm_in = HashMap::with_capacity(3);
+        hm_in.insert(('N', 'N'), 1);
+        hm_in.insert(('N', 'C'), 1);
+        hm_in.insert(('C', 'B'), 1);
+
+        let mut hm_out = HashMap::with_capacity(6);
+        hm_out.insert(('N', 'C'), 1);
+        hm_out.insert(('C', 'N'), 1);
+        hm_out.insert(('N', 'B'), 1);
+        hm_out.insert(('B', 'C'), 1);
+        hm_out.insert(('C', 'H'), 1);
+        hm_out.insert(('H', 'B'), 1);
+
+        let mut hm_rules = HashMap::with_capacity(3);
+        hm_rules.insert(('N', 'N'), 'C');
+        hm_rules.insert(('N', 'C'), 'B');
+        hm_rules.insert(('C', 'B'), 'H');
+
+        let calculated = apply_rules(&hm_in, &hm_rules);
+        assert_eq!(calculated, hm_out);
+    }
+
+    #[test]
+    fn test_count_letter_frequencies() {
+        let final_char = 'B';
+        let mut hm_in = HashMap::with_capacity(6);
+        hm_in.insert(('N', 'C'), 1);
+        hm_in.insert(('C', 'N'), 1);
+        hm_in.insert(('N', 'B'), 1);
+        hm_in.insert(('B', 'C'), 1);
+        hm_in.insert(('C', 'H'), 1);
+        hm_in.insert(('H', 'B'), 1);
+
+        let mut letter_frequencies = Vec::with_capacity(4);
+        letter_frequencies.push(('N', 2));
+        letter_frequencies.push(('C', 2));
+        letter_frequencies.push(('B', 2));
+        letter_frequencies.push(('H', 1));
+
+        let calculated = count_letter_frequencies(&hm_in, final_char);
+
+        // Can't know what order the hashmap returns the keys, so for testing
+        // we convert back to HashMaps
+        assert_eq!(
+            calculated.into_iter().collect::<HashMap<_, _>>(),
+            letter_frequencies.into_iter().collect::<HashMap<_, _>>()
+        );
+    }
+
+    #[test]
+    fn test_get_difference_between_most_common_and_least_common() {
+        let mut letter_frequencies = vec![('N', 2), ('H', 1), ('B', 2), ('C', 2)];
+        let calculated = get_difference_between_most_and_least_common(&mut letter_frequencies);
+        assert_eq!(calculated, 1);
     }
 }
