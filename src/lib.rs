@@ -69,19 +69,3 @@ fn call_with<'a, T: Display + 'a, U: Display + 'a>(
     let tuple = run(&string);
     func(&tuple.0, &tuple.1)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_all_solutions_run_normally() {
-        (1..=25).for_each(|day| run_with(day, |_, _| {}));
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_invalid_solution_panic() {
-        run_with(usize::MAX, |_, _| {});
-    }
-}
