@@ -1,17 +1,18 @@
 use std::iter::once;
 
-pub fn run(input: &str) -> (u32, u32) {
+pub fn run(input: &str) -> (u64, u64) {
     let mut stream = hexadecimal_to_bit_stream(input);
     let packet = read_packet(&mut stream);
     let part_1 = get_version_number_sum(&packet);
-    (part_1, 0)
+    let part_2 = evaluate_packet(&packet);
+    (part_1, part_2)
 }
 
 /// Represents a single packet as decoded from the bit stream. A packet has a version
 /// number but also has a packet type which contains further information.
 #[derive(Debug, PartialEq)]
 struct Packet {
-    version: u32,
+    version: u64,
     packet_type: PacketType,
 }
 
@@ -19,8 +20,14 @@ struct Packet {
 /// more sub-packets.
 #[derive(Debug, PartialEq)]
 enum PacketType {
-    Literal(u32),
-    Operator(Vec<Packet>),
+    Literal(u64),
+    Sum(Vec<Packet>),
+    Product(Vec<Packet>),
+    Minimum(Vec<Packet>),
+    Maximum(Vec<Packet>),
+    GreaterThan(Vec<Packet>),
+    LessThan(Vec<Packet>),
+    EqualTo(Vec<Packet>),
 }
 
 /// Determines if we're using the total length in bits method, or packet count method of reading
@@ -36,7 +43,7 @@ enum LengthType {
 #[derive(Debug, PartialEq)]
 struct SubPacketLength {
     length_type: LengthType,
-    count: u32,
+    count: u64,
 }
 
 /// Wraps the bit stream and allows us to count the number of bits read as it's being read.
@@ -45,7 +52,7 @@ struct SubPacketLength {
 /// from the back of the stack.
 struct BitStream<T> {
     iter: T,
-    bits_read_stack: Vec<u32>,
+    bits_read_stack: Vec<u64>,
 }
 
 impl<T> BitStream<T> {
@@ -71,12 +78,34 @@ impl<T: Iterator<Item = bool>> Iterator for BitStream<T> {
     }
 }
 
+/// Evaluates a packet into a u64 answer
+fn evaluate_packet(packet: &Packet) -> u64 {
+    match &packet.packet_type {
+        PacketType::Literal(x) => *x,
+        PacketType::Sum(sub) => sub.iter().map(|elem| evaluate_packet(elem)).sum(),
+        PacketType::Product(sub) => sub.iter().map(|elem| evaluate_packet(elem)).product(),
+        PacketType::Minimum(sub) => sub.iter().map(|elem| evaluate_packet(elem)).min().unwrap(),
+        PacketType::Maximum(sub) => sub.iter().map(|elem| evaluate_packet(elem)).max().unwrap(),
+        PacketType::GreaterThan(sub) => {
+            (evaluate_packet(&sub[0]) > evaluate_packet(&sub[1])) as u64
+        }
+        PacketType::LessThan(sub) => (evaluate_packet(&sub[0]) < evaluate_packet(&sub[1])) as u64,
+        PacketType::EqualTo(sub) => (evaluate_packet(&sub[0]) == evaluate_packet(&sub[1])) as u64,
+    }
+}
+
 /// Gets the sum of all version numbers in the given packet and sub-packets.
-fn get_version_number_sum(packet: &Packet) -> u32 {
+fn get_version_number_sum(packet: &Packet) -> u64 {
     packet.version
         + match &packet.packet_type {
             PacketType::Literal(..) => 0,
-            PacketType::Operator(sub) => sub.iter().map(|sub| get_version_number_sum(sub)).sum(),
+            PacketType::Sum(sub)
+            | PacketType::Product(sub)
+            | PacketType::Minimum(sub)
+            | PacketType::Maximum(sub)
+            | PacketType::GreaterThan(sub)
+            | PacketType::LessThan(sub)
+            | PacketType::EqualTo(sub) => sub.iter().map(|sub| get_version_number_sum(sub)).sum(),
         }
 }
 
@@ -98,7 +127,14 @@ fn read_packet_type(stream: &mut BitStream<impl Iterator<Item = bool>>) -> Packe
     let packet_type_id = read_binary_number(stream, 3);
     match packet_type_id {
         4 => PacketType::Literal(read_literal_packet_value(stream)),
-        _ => PacketType::Operator(read_sub_packets(stream)),
+        0 => PacketType::Sum(read_sub_packets(stream)),
+        1 => PacketType::Product(read_sub_packets(stream)),
+        2 => PacketType::Minimum(read_sub_packets(stream)),
+        3 => PacketType::Maximum(read_sub_packets(stream)),
+        5 => PacketType::GreaterThan(read_sub_packets(stream)),
+        6 => PacketType::LessThan(read_sub_packets(stream)),
+        7 => PacketType::EqualTo(read_sub_packets(stream)),
+        _ => panic!("Expected valid packet type ID but found {}", packet_type_id),
     }
 }
 
@@ -144,7 +180,7 @@ fn read_length_type(stream: &mut impl Iterator<Item = bool>) -> LengthType {
 /// Reads from the bit stream and interprets as the value of the literal packet type. This
 /// requires reading blocks of 4 bits at a time until it's been terminated and concatenating
 /// the resulting chunks together
-fn read_literal_packet_value(stream: &mut impl Iterator<Item = bool>) -> u32 {
+fn read_literal_packet_value(stream: &mut impl Iterator<Item = bool>) -> u64 {
     let mut total = 0;
     loop {
         let group_bit = stream.next().unwrap();
@@ -192,11 +228,11 @@ fn hexadecimal_to_bit_stream(input: &str) -> BitStream<impl Iterator<Item = bool
 
 /// Takes the number of bits to read from a given iterator of booleans, reads that
 /// many and converts to a decimal number.
-fn read_binary_number(stream: &mut impl Iterator<Item = bool>, bit_count: usize) -> u32 {
+fn read_binary_number(stream: &mut impl Iterator<Item = bool>, bit_count: usize) -> u64 {
     (0..bit_count)
         .into_iter()
         .zip(stream)
-        .fold(0, |total, (_, bit)| (total << 1) + bit as u32)
+        .fold(0, |total, (_, bit)| (total << 1) + bit as u64)
 }
 
 #[cfg(test)]
@@ -224,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_read_binary_number() {
-        const EXPECTED: u32 = 27;
+        const EXPECTED: u64 = 27;
         let mut stream = BitStream::new([true, true, false, true, true].into_iter());
         let calculated = read_binary_number(&mut stream, 5);
         assert_eq!(calculated, EXPECTED);
@@ -232,8 +268,8 @@ mod tests {
 
     #[test]
     fn test_read_multiple_binary_numbers() {
-        const EXPECTED_1: u32 = 27;
-        const EXPECTED_2: u32 = 19;
+        const EXPECTED_1: u64 = 27;
+        const EXPECTED_2: u64 = 19;
         let mut stream = BitStream::new(
             [
                 true, true, false, true, true, true, false, false, true, true,
@@ -247,7 +283,7 @@ mod tests {
 
     #[test]
     fn test_read_literal_packet_value() {
-        const EXPECTED: u32 = 2021;
+        const EXPECTED: u64 = 2021;
         let mut stream = BitStream::new(
             [
                 true, false, true, true, true, true, true, true, true, false, false, false, true,
@@ -327,7 +363,7 @@ mod tests {
         let mut stream = hexadecimal_to_bit_stream("38006F45291200");
         let expected = Packet {
             version: 1,
-            packet_type: PacketType::Operator(vec![
+            packet_type: PacketType::LessThan(vec![
                 Packet {
                     version: 6,
                     packet_type: PacketType::Literal(10),
@@ -347,7 +383,7 @@ mod tests {
         let mut stream = hexadecimal_to_bit_stream("EE00D40C823060");
         let expected = Packet {
             version: 7,
-            packet_type: PacketType::Operator(vec![
+            packet_type: PacketType::Maximum(vec![
                 Packet {
                     version: 2,
                     packet_type: PacketType::Literal(1),
@@ -369,7 +405,7 @@ mod tests {
     #[test]
     fn test_get_version_number_sum() {
         let mut stream = hexadecimal_to_bit_stream("EE00D40C823060");
-        const EXPECTED: u32 = 14;
+        const EXPECTED: u64 = 14;
         let packet = read_packet(&mut stream);
         let calculated = get_version_number_sum(&packet);
         assert_eq!(calculated, EXPECTED);
@@ -378,7 +414,7 @@ mod tests {
     #[test]
     fn test_get_another_version_number_sum() {
         let mut stream = hexadecimal_to_bit_stream("8A004A801A8002F478");
-        const EXPECTED: u32 = 16;
+        const EXPECTED: u64 = 16;
         let packet = read_packet(&mut stream);
         let calculated = get_version_number_sum(&packet);
         assert_eq!(calculated, EXPECTED);
@@ -387,9 +423,51 @@ mod tests {
     #[test]
     fn test_get_yet_another_version_number_sum() {
         let mut stream = hexadecimal_to_bit_stream("A0016C880162017C3686B18A3D4780");
-        const EXPECTED: u32 = 31;
+        const EXPECTED: u64 = 31;
         let packet = read_packet(&mut stream);
         let calculated = get_version_number_sum(&packet);
         assert_eq!(calculated, EXPECTED);
+    }
+
+    #[test]
+    fn test_evaluate_packet() {
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream("C200B40A82"))),
+            3
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream("04005AC33890"))),
+            54
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream(
+                "880086C3E88112"
+            ))),
+            7
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream(
+                "CE00C43D881120"
+            ))),
+            9
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream("D8005AC2A8F0"))),
+            1
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream("F600BC2D8F"))),
+            0
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream("9C005AC2F8F0"))),
+            0
+        );
+        assert_eq!(
+            evaluate_packet(&read_packet(&mut hexadecimal_to_bit_stream(
+                "9C0141080250320F1802104A08"
+            ))),
+            1
+        );
     }
 }
