@@ -1,16 +1,74 @@
-pub fn run(input: &str) -> (u32, u32) {
+pub fn run(input: &str) -> (u32, usize) {
     let aabb = extract_aabb(input);
     let y_velocity = calculate_starting_y_velocity_required_for_highest_peak(aabb.bottom_left.1);
     let part_1 = calculate_triangular_number(y_velocity as u32);
-    (part_1, 0)
+    let velocity_space = calculate_velocity_space(&aabb);
+    let part_2 = generate_velocities(velocity_space.clone())
+        .filter(|velocity| {
+            generate_positions_from_velocity(*velocity)
+                .take_while(|position| {
+                    position.0 <= velocity_space.top_right.0
+                        && position.1 >= velocity_space.bottom_left.1
+                })
+                .filter(|position| is_position_inside_aabb(*position, &aabb))
+                .next()
+                .is_some()
+        })
+        .count();
+    (part_1, part_2)
 }
 
 /// Defines an axis-aligned bounding box which is the area
 /// we're trying to land the probe inside of.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 struct AABB {
     bottom_left: (i32, i32),
     top_right: (i32, i32),
+}
+
+/// Generates all positions that a given velocity will have.
+/// Note that this generates an infinite sequence so it's upto calling code to
+/// clamp this.
+fn generate_positions_from_velocity(velocity: (i32, i32)) -> impl Iterator<Item = (i32, i32)> {
+    (0..).scan((velocity, (0, 0)), |velocity_and_position, _| {
+        let (velocity, position) = (&mut velocity_and_position.0, &mut velocity_and_position.1);
+        position.0 += velocity.0;
+        position.1 += velocity.1;
+        if velocity.0 > 0 {
+            velocity.0 -= 1;
+        } else if velocity.0 < 0 {
+            velocity.0 += 1;
+        }
+        velocity.1 -= 1;
+        Some(*position)
+    })
+}
+
+/// Tests whether a position is inside the given AABB or not.
+fn is_position_inside_aabb(position: (i32, i32), aabb: &AABB) -> bool {
+    position.0 >= aabb.bottom_left.0
+        && position.0 <= aabb.top_right.0
+        && position.1 >= aabb.bottom_left.1
+        && position.1 <= aabb.top_right.1
+}
+
+/// Generates all velocities in the given velocity space.
+fn generate_velocities(velocity_space: AABB) -> impl Iterator<Item = (i32, i32)> {
+    (velocity_space.bottom_left.1..=velocity_space.top_right.1).flat_map(move |y| {
+        (velocity_space.bottom_left.0..=velocity_space.top_right.0).map(move |x| (x, y))
+    })
+}
+
+/// Gets the AABB that contains the velocities that we'll check.
+/// We'll just brute force it by testing every velocity in the velocity space.
+/// The velocity space being all velocities that won't overshoot the thing in a step.
+/// For x, we'll just take all velocities (0..=trench_x_max)
+/// For y, we'll take all velocities in the range (trench_y_min..=-(trench_y_min+1))
+fn calculate_velocity_space(trench: &AABB) -> AABB {
+    AABB {
+        bottom_left: (0, trench.bottom_left.1),
+        top_right: (trench.top_right.0, -(trench.bottom_left.1 + 1)),
+    }
 }
 
 /// Extracts the min and max coordinates of the AABB we're landing in, given the input string.
@@ -102,5 +160,100 @@ mod tests {
         assert_eq!(parse_range("-56..-12"), (-56, -12));
         assert_eq!(parse_range("42..-42"), (-42, 42));
         assert_eq!(parse_range("-42..42"), (-42, 42));
+    }
+
+    #[test]
+    fn test_calculate_velocity_space() {
+        let trench = AABB {
+            bottom_left: (22, -30),
+            top_right: (55, -10),
+        };
+        let velocity_space = calculate_velocity_space(&trench);
+        const EXPECTED: AABB = AABB {
+            bottom_left: (0, -30),
+            top_right: (55, 29),
+        };
+        assert_eq!(velocity_space, EXPECTED);
+    }
+
+    #[test]
+    fn test_generate_velocities() {
+        const VELOCITY_SPACE: AABB = AABB {
+            bottom_left: (0, -3),
+            top_right: (3, 3),
+        };
+        let expected = vec![
+            (0, -3),
+            (1, -3),
+            (2, -3),
+            (3, -3),
+            (0, -2),
+            (1, -2),
+            (2, -2),
+            (3, -2),
+            (0, -1),
+            (1, -1),
+            (2, -1),
+            (3, -1),
+            (0, 0),
+            (1, 0),
+            (2, 0),
+            (3, 0),
+            (0, 1),
+            (1, 1),
+            (2, 1),
+            (3, 1),
+            (0, 2),
+            (1, 2),
+            (2, 2),
+            (3, 2),
+            (0, 3),
+            (1, 3),
+            (2, 3),
+            (3, 3),
+        ];
+        assert_eq!(
+            generate_velocities(VELOCITY_SPACE).collect::<Vec<_>>(),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_generate_positions_from_velocity() {
+        let velocity = (3, 6);
+        let calculated = generate_positions_from_velocity(velocity)
+            .take(10)
+            .collect::<Vec<_>>();
+        let expected = vec![
+            (3, 6),
+            (5, 11),
+            (6, 15),
+            (6, 18),
+            (6, 20),
+            (6, 21),
+            (6, 21),
+            (6, 20),
+            (6, 18),
+            (6, 15),
+        ];
+        assert_eq!(calculated, expected);
+    }
+
+    #[test]
+    fn test_is_position_inside_aabb() {
+        const BOUNDS: AABB = AABB {
+            bottom_left: (10, -20),
+            top_right: (30, -5),
+        };
+        assert!(is_position_inside_aabb((13, -16), &BOUNDS));
+        assert!(!is_position_inside_aabb((7, -16), &BOUNDS));
+        assert!(!is_position_inside_aabb((13, -3), &BOUNDS));
+    }
+
+    #[test]
+    fn test_run_example() {
+        const INPUT: &str = "target area: x=20..30, y=-10..-5";
+        const EXPECTED: (u32, usize) = (45, 112);
+        assert_eq!(run(INPUT), EXPECTED);
     }
 }
