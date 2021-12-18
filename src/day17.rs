@@ -65,8 +65,15 @@ fn generate_velocities(velocity_space: AABB) -> impl Iterator<Item = (i32, i32)>
 /// For x, we'll just take all velocities (0..=trench_x_max)
 /// For y, we'll take all velocities in the range (trench_y_min..=-(trench_y_min+1))
 fn calculate_velocity_space(trench: &AABB) -> AABB {
+    // we don't start x at 0, but instead constrain to x >= n where n is the
+    // highest triangular number that's less than the trench edge.
+    let x_min = (1..)
+        .take_while(|i| calculate_triangular_number(*i) as i32 <= trench.bottom_left.0)
+        .last()
+        .unwrap() as i32;
+
     AABB {
-        bottom_left: (0, trench.bottom_left.1),
+        bottom_left: (x_min, trench.bottom_left.1),
         top_right: (trench.top_right.0, -(trench.bottom_left.1 + 1)),
     }
 }
@@ -170,7 +177,7 @@ mod tests {
         };
         let velocity_space = calculate_velocity_space(&trench);
         const EXPECTED: AABB = AABB {
-            bottom_left: (0, -30),
+            bottom_left: (6, -30),
             top_right: (55, 29),
         };
         assert_eq!(velocity_space, EXPECTED);
