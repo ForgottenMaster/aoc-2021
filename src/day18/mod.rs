@@ -2,15 +2,36 @@ mod number;
 
 use number::Number;
 
-pub fn run(input: &str) -> (u64, u32) {
+pub fn run(input: &str) -> (u64, u64) {
     let mut stack = vec![];
-    let mut iter = input.trim().lines();
-    let total = iter.next().unwrap().trim().parse::<Number>().unwrap();
-    let total = iter.fold(total, |total, line| {
-        let total = total + line.trim().parse::<Number>().unwrap();
-        total.reduce(&mut stack);
-        total
-    });
-    let part_1 = total.magnitude();
-    (part_1, 0)
+    let numbers = input
+        .trim()
+        .lines()
+        .map(|line| line.trim().parse::<Number>().unwrap())
+        .collect::<Vec<_>>();
+    let part_1 = numbers
+        .iter()
+        .fold(numbers[0].clone(), |total, number| {
+            let total = total + (*number).clone();
+            total.reduce(&mut stack);
+            total
+        })
+        .magnitude();
+    let part_2 = numbers
+        .iter()
+        .enumerate()
+        .flat_map(|(i, number_i)| {
+            numbers
+                .iter()
+                .take(i)
+                .chain(numbers.iter().skip(i + 1))
+                .map(|number_j| number_i.clone() + number_j.clone())
+        })
+        .map(|number| {
+            number.reduce(&mut stack);
+            number.magnitude()
+        })
+        .max()
+        .unwrap();
+    (part_1, part_2)
 }

@@ -191,6 +191,14 @@ impl Add for Number {
     }
 }
 
+// Required because adding two Numbers together does a try_unwrap()/unwrap()
+// and the default clone will just clone the root Rc (preventing the unwrap).
+impl Clone for Number {
+    fn clone(&self) -> Self {
+        Self(Rc::new(RefCell::new((*self.0.borrow()).clone())))
+    }
+}
+
 impl FromStr for Number {
     type Err = Infallible;
 

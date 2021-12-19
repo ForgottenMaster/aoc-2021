@@ -3,7 +3,7 @@ use std::{cell::RefCell, convert::Infallible, ops::Add, rc::Rc, str::FromStr};
 /// Represents the type of an element of a pair in Snailfish numbers.
 /// An element can either be another pair of NumberType or can be
 /// a regular number.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum NumberType {
     Pair(Rc<RefCell<NumberType>>, Rc<RefCell<NumberType>>), // need to box here because otherwise would be recursive/infinite size. We use Rc here as we'll be pushing pointers onto the stack later.
     Regular(u8),
@@ -42,6 +42,19 @@ impl Add for NumberType {
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::Pair(Rc::new(RefCell::new(self)), Rc::new(RefCell::new(rhs)))
+    }
+}
+
+// Required as we want a deep clone.
+impl Clone for NumberType {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Regular(val) => Self::Regular(*val),
+            Self::Pair(p1, p2) => Self::Pair(
+                Rc::new(RefCell::new((*p1.borrow()).clone())),
+                Rc::new(RefCell::new((*p2.borrow()).clone())),
+            ),
+        }
     }
 }
 
