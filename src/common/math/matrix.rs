@@ -5,7 +5,7 @@ use std::{
 
 /// Represents a mathematical matrix along with operations to manipulate
 /// them and more specifically to transform points.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Matrix<T, const ROWS: usize, const COLS: usize>([[T; COLS]; ROWS]);
 
 impl<T, const ROWS: usize, const COLS: usize> Matrix<T, ROWS, COLS> {
