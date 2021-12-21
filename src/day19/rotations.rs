@@ -1,4 +1,4 @@
-use crate::common::math::Matrix;
+use {crate::common::math::Matrix, std::collections::HashSet};
 
 // sin constants
 const SIN_0_DEG: i64 = 0;
@@ -41,11 +41,11 @@ const fn cos(angle: Angle) -> i64 {
     }
 }
 
-/// Const function that produces a rotation matrix given sine and cosine values for the angles
-/// of each of the three axis. Rotation is applied in the order x, y, and then z.
+/// Const function that produces a rotation matrix given the desired angles for rotation
+/// around x, y, and z axis. Applies the rotations in the order of x first, then y, then z.
 const fn rotation_matrix(x: Angle, y: Angle, z: Angle) -> Matrix<i64, 3, 3> {
-    let (sin_x, sin_y, sin_z, cos_x, cos_y, cos_z) =
-        (sin(x), sin(y), sin(z), cos(x), cos(y), cos(z));
+    let (sin_y, sin_z, sin_x, cos_y, cos_z, cos_x) =
+        (sin(y), sin(z), sin(x), cos(y), cos(z), cos(x));
     Matrix::new([
         [
             cos_z * cos_y,
@@ -61,85 +61,40 @@ const fn rotation_matrix(x: Angle, y: Angle, z: Angle) -> Matrix<i64, 3, 3> {
     ])
 }
 
-// Rotations to apply
-const ROTATION_POS_Z_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Zero, Angle::Zero);
-const ROTATION_POS_Z_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Zero, Angle::Ninety);
-const ROTATION_POS_Z_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Zero, Angle::OneEighty);
-const ROTATION_POS_Z_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Zero, Angle::TwoSeventy);
-
-const ROTATION_NEG_Z_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::Zero);
-const ROTATION_NEG_Z_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::Ninety);
-const ROTATION_NEG_Z_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::OneEighty);
-const ROTATION_NEG_Z_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::TwoSeventy);
-
-const ROTATION_POS_X_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::Zero);
-const ROTATION_POS_X_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::Ninety);
-const ROTATION_POS_X_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::OneEighty);
-const ROTATION_POS_X_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::TwoSeventy);
-
-const ROTATION_NEG_X_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::Zero);
-const ROTATION_NEG_X_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::Ninety);
-const ROTATION_NEG_X_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::OneEighty);
-const ROTATION_NEG_X_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::TwoSeventy);
-
-const ROTATION_POS_Y_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::Zero);
-const ROTATION_POS_Y_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::Ninety);
-const ROTATION_POS_Y_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::OneEighty);
-const ROTATION_POS_Y_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::TwoSeventy);
-
-const ROTATION_NEG_Y_0_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::Zero);
-const ROTATION_NEG_Y_90_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::Ninety);
-const ROTATION_NEG_Y_180_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::OneEighty);
-const ROTATION_NEG_Y_270_DEG: Matrix<i64, 3, 3> =
-    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::TwoSeventy);
-
 // all the valid orientations for the scanners.
-const ROTATIONS: [&Matrix<i64, 3, 3>; 24] = [
-    &ROTATION_POS_X_0_DEG,
-    &ROTATION_POS_X_90_DEG,
-    &ROTATION_POS_X_180_DEG,
-    &ROTATION_POS_X_270_DEG,
-    &ROTATION_NEG_X_0_DEG,
-    &ROTATION_NEG_X_90_DEG,
-    &ROTATION_NEG_X_180_DEG,
-    &ROTATION_NEG_X_270_DEG,
-    &ROTATION_POS_Y_0_DEG,
-    &ROTATION_POS_Y_90_DEG,
-    &ROTATION_POS_Y_180_DEG,
-    &ROTATION_POS_Y_270_DEG,
-    &ROTATION_NEG_Y_0_DEG,
-    &ROTATION_NEG_Y_90_DEG,
-    &ROTATION_NEG_Y_180_DEG,
-    &ROTATION_NEG_Y_270_DEG,
-    &ROTATION_POS_Z_0_DEG,
-    &ROTATION_POS_Z_90_DEG,
-    &ROTATION_POS_Z_180_DEG,
-    &ROTATION_POS_Z_270_DEG,
-    &ROTATION_NEG_Z_0_DEG,
-    &ROTATION_NEG_Z_90_DEG,
-    &ROTATION_NEG_Z_180_DEG,
-    &ROTATION_NEG_Z_270_DEG,
+pub const ROTATIONS: [Matrix<i64, 3, 3>; 24] = [
+    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::OneEighty),
+    rotation_matrix(Angle::Zero, Angle::Ninety, Angle::TwoSeventy),
+    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::Ninety),
+    rotation_matrix(Angle::Zero, Angle::OneEighty, Angle::TwoSeventy),
+    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::Ninety),
+    rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::OneEighty),
+    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::OneEighty),
+    rotation_matrix(Angle::Ninety, Angle::Zero, Angle::TwoSeventy),
+    rotation_matrix(Angle::Ninety, Angle::OneEighty, Angle::Zero),
+    rotation_matrix(Angle::Ninety, Angle::OneEighty, Angle::TwoSeventy),
+    rotation_matrix(Angle::Ninety, Angle::TwoSeventy, Angle::Zero),
+    rotation_matrix(Angle::Ninety, Angle::TwoSeventy, Angle::OneEighty),
+    rotation_matrix(Angle::OneEighty, Angle::Zero, Angle::Ninety),
+    rotation_matrix(Angle::OneEighty, Angle::Zero, Angle::TwoSeventy),
+    rotation_matrix(Angle::OneEighty, Angle::Ninety, Angle::Zero),
+    rotation_matrix(Angle::OneEighty, Angle::Ninety, Angle::TwoSeventy),
+    rotation_matrix(Angle::OneEighty, Angle::TwoSeventy, Angle::Zero),
+    rotation_matrix(Angle::OneEighty, Angle::TwoSeventy, Angle::Ninety),
+    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::Ninety),
+    rotation_matrix(Angle::TwoSeventy, Angle::Zero, Angle::OneEighty),
+    rotation_matrix(Angle::TwoSeventy, Angle::Ninety, Angle::Zero),
+    rotation_matrix(Angle::TwoSeventy, Angle::Ninety, Angle::OneEighty),
+    rotation_matrix(Angle::TwoSeventy, Angle::OneEighty, Angle::Zero),
+    rotation_matrix(Angle::TwoSeventy, Angle::OneEighty, Angle::Ninety),
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rotation_count() {
+        assert_eq!(ROTATIONS.len(), 24);
+    }
+}

@@ -1,4 +1,7 @@
-use std::{iter::Sum, ops::Mul};
+use std::{
+    iter::Sum,
+    ops::{Add, Mul},
+};
 
 /// Represents a mathematical matrix along with operations to manipulate
 /// them and more specifically to transform points.
@@ -50,6 +53,32 @@ impl<
             });
         });
         result
+    }
+}
+
+impl<T: Add<T, Output = T> + Clone + Mul<T, Output = T>> Mul<&(T, T, T)> for &Matrix<T, 3, 3> {
+    type Output = (T, T, T);
+
+    fn mul(self, rhs: &(T, T, T)) -> Self::Output {
+        (
+            (self.0[0][0].clone() * rhs.0.clone())
+                + (self.0[0][1].clone() * rhs.1.clone())
+                + (self.0[0][2].clone() * rhs.2.clone()),
+            (self.0[1][0].clone() * rhs.0.clone())
+                + (self.0[1][1].clone() * rhs.1.clone())
+                + (self.0[1][2].clone() * rhs.2.clone()),
+            (self.0[2][0].clone() * rhs.0.clone())
+                + (self.0[2][1].clone() * rhs.1.clone())
+                + (self.0[2][2].clone() * rhs.2.clone()),
+        )
+    }
+}
+
+impl<T: Add<T, Output = T> + Clone + Mul<T, Output = T>> Mul<(T, T, T)> for Matrix<T, 3, 3> {
+    type Output = (T, T, T);
+
+    fn mul(self, rhs: (T, T, T)) -> Self::Output {
+        &self * &rhs
     }
 }
 
@@ -108,5 +137,18 @@ mod tests {
             &Matrix::new([[3, -1], [1, 2], [6, 1]]) * &Matrix::new([[0, -1, 2], [4, 11, 2]]),
             Matrix::new([[-4, -14, 4], [8, 21, 6], [4, 5, 14]])
         );
+    }
+
+    #[test]
+    fn test_point_rotation() {
+        const ROT_90_AROUND_Z_COUNTER_CLOCKWISE: Matrix<i64, 3, 3> =
+            Matrix::new([[0, -1, 0], [1, 0, 0], [0, 0, 1]]);
+        const ROT_270_AROUND_Z_COUNTER_CLOCKWISE: Matrix<i64, 3, 3> =
+            Matrix::new([[0, 1, 0], [-1, 0, 0], [0, 0, 1]]);
+        const ROT_90_AROUND_Y_COUNTER_CLOCKWISE: Matrix<i64, 3, 3> =
+            Matrix::new([[0, 0, -1], [1, 0, 0], [0, -1, 0]]);
+        assert_eq!(ROT_90_AROUND_Z_COUNTER_CLOCKWISE * (0, 10, 0), (-10, 0, 0));
+        assert_eq!(ROT_270_AROUND_Z_COUNTER_CLOCKWISE * (0, 10, 0), (10, 0, 0));
+        assert_eq!(ROT_90_AROUND_Y_COUNTER_CLOCKWISE * (10, 0, 0), (0, 10, 0));
     }
 }
