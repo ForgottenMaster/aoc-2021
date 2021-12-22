@@ -128,13 +128,14 @@ const fn rotation_matrix(x: Angle, y: Angle, z: Angle) -> Matrix<i64, 3, 3> {
 }
 
 // all the possible rotation matrices with all possible orders of multiplication.
-const ROTATIONS: [Matrix<i64, 3, 3>; 24] = [
+// identity rotation is placed first.
+pub const ROTATIONS: [Matrix<i64, 3, 3>; 24] = [
+    rotation_matrix(Angle::Zero, Angle::Zero, Angle::Zero),
     rotation_matrix(Angle::Zero, Angle::Zero, Angle::Ninety),
     rotation_matrix(Angle::Ninety, Angle::OneEighty, Angle::OneEighty),
     rotation_matrix(Angle::Ninety, Angle::OneEighty, Angle::Zero),
     rotation_matrix(Angle::Zero, Angle::Zero, Angle::TwoSeventy),
     rotation_matrix(Angle::Zero, Angle::Ninety, Angle::TwoSeventy),
-    rotation_matrix(Angle::Zero, Angle::Zero, Angle::Zero),
     rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::Zero),
     rotation_matrix(Angle::Zero, Angle::TwoSeventy, Angle::OneEighty),
     rotation_matrix(Angle::Zero, Angle::Zero, Angle::OneEighty),
