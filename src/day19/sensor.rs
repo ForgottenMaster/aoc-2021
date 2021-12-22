@@ -6,10 +6,11 @@ use {
 
 /// Represents a single Sensor in the puzzle which can detect a certain number of points
 /// from whatever its rotation happens to be. The points of a sensor will be stored for each
-/// rotation. Additionally, the Sensor will store the distances between pairs of points.
+/// rotation.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Sensor<'a> {
-    points: [(&'a Matrix<i64, 3, 3>, Vec<(i64, i64, i64)>); 24],
-    distances: Vec<((i64, i64, i64), (i64, i64, i64), i64)>,
+    pub points: [(&'a Matrix<i64, 3, 3>, Vec<(i64, i64, i64)>); 24],
+    pub distances: Vec<((i64, i64, i64), (i64, i64, i64), i64)>,
 }
 
 /// Calculates the manhattan distance between two points.

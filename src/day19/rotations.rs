@@ -1,4 +1,4 @@
-use {crate::common::math::Matrix, std::collections::HashSet};
+use crate::common::math::Matrix;
 
 // sin constants
 const SIN_0_DEG: i64 = 0;
@@ -107,17 +107,6 @@ const fn mult_mat(mat_1: [[i64; 3]; 3], mat_2: [[i64; 3]; 3]) -> [[i64; 3]; 3] {
     ]
 }
 
-/// Matrix multiplication isn't commutative so this defines the order of rotation.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-enum RotationOrder {
-    XYZ,
-    XZY,
-    YXZ,
-    YZX,
-    ZXY,
-    ZYX,
-}
-
 /// Produces the matrix for a given sequence of rotations with a given
 /// angle set. Order of rotation is Z, Y, then X.
 const fn rotation_matrix(x: Angle, y: Angle, z: Angle) -> Matrix<i64, 3, 3> {
@@ -159,6 +148,7 @@ pub const ROTATIONS: [Matrix<i64, 3, 3>; 24] = [
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
     fn test_rotation_count() {
