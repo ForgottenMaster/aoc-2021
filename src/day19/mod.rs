@@ -10,7 +10,7 @@ use sensor_object::SensorObject;
 use std::collections::{HashMap, HashSet};
 use std::iter::once;
 
-pub fn run(input: &str) -> (usize, u32) {
+pub fn run(input: &str) -> (usize, i64) {
     let sensors = parse_into_sensors(input);
     let processed = vec![&sensors[0]];
     let unprocessed = sensors.iter().skip(1).collect();
@@ -57,7 +57,33 @@ pub fn run(input: &str) -> (usize, u32) {
         .into_iter()
         .filter(|obj| matches!(obj, SensorObject::Beacon(_)))
         .count();
-    (part_1, 0)
+
+    // Part 2 will need to test each sensor against each other to find the largest manhattan distance.
+    let part_2 = map
+        .into_iter()
+        .filter(|obj| matches!(obj, SensorObject::Sensor(..)))
+        .enumerate()
+        .flat_map(|(idx, obj_1)| {
+            map.into_iter()
+                .filter(|obj| matches!(obj, SensorObject::Sensor(..)))
+                .enumerate()
+                .skip(idx + 1)
+                .map(move |(_, obj_2)| match (obj_1, obj_2) {
+                    (SensorObject::Sensor(pos_1), SensorObject::Sensor(pos_2)) => {
+                        manhattan_distance(pos_1, pos_2)
+                    }
+                    _ => unreachable!(),
+                })
+        })
+        .max()
+        .unwrap();
+
+    (part_1, part_2)
+}
+
+/// Calculates the manhattan distance between two points.
+fn manhattan_distance(p1: &(i64, i64, i64), p2: &(i64, i64, i64)) -> i64 {
+    (p1.0 - p2.0).abs() + (p1.1 - p2.1).abs() + (p1.2 - p2.2).abs()
 }
 
 /// Takes a SensorObject, and a reference to a rotation and translation that can be applied
@@ -334,7 +360,7 @@ mod tests {
     }
 
     #[test]
-    fn test_part_1() {
+    fn test_run() {
         const INPUT: &str = r#"
         --- scanner 0 ---
         404,-588,-901
@@ -473,7 +499,7 @@ mod tests {
         -652,-548,-490
         30,-46,-14
         "#;
-        const EXPECTED: usize = 79;
-        assert_eq!(run(INPUT).0, EXPECTED);
+        const EXPECTED: (usize, i64) = (79, 3621);
+        assert_eq!(run(INPUT), EXPECTED);
     }
 }

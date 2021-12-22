@@ -1,5 +1,5 @@
 use {
-    super::rotations::ROTATIONS,
+    super::{manhattan_distance, rotations::ROTATIONS},
     crate::common::math::Matrix,
     std::{convert::Infallible, str::FromStr},
 };
@@ -11,11 +11,6 @@ use {
 pub struct Sensor<'a> {
     pub points: [(&'a Matrix<i64, 3, 3>, Vec<(i64, i64, i64)>); 24],
     pub distances: Vec<((i64, i64, i64), (i64, i64, i64), i64)>,
-}
-
-/// Calculates the manhattan distance between two points.
-fn manhattan_distance(p1: &(i64, i64, i64), p2: &(i64, i64, i64)) -> i64 {
-    (p1.0 - p2.0).abs() + (p1.1 - p2.1).abs() + (p1.2 - p2.2).abs()
 }
 
 /// Applies the rotation at the given index to the list of points
