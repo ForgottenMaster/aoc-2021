@@ -54,7 +54,7 @@ I will however include Criterion as a dev-dependency. This means if you're runni
 This table identifies which solutions have been completed and which are still yet to be done. Ideally these will get checked off at a rate of 2 per day to keep upto speed with release.
 
 |Puzzle|Part 1|Part 2|Benchmark (microseconds)|
-|:-:|:-:|:-:|;-;|
+|:-:|:-:|:-:|:-:|
 |[Day 1 - Sonar Sweep](https://adventofcode.com/2021/day/1)|:heavy_check_mark:|:heavy_check_mark:|489|
 |[Day 2 - Dive!](https://adventofcode.com/2021/day/2)|:heavy_check_mark:|:heavy_check_mark:|201|
 |[Day 3 - Binary Diagnostic](https://adventofcode.com/2021/day/3)|:heavy_check_mark:|:heavy_check_mark:|311|
