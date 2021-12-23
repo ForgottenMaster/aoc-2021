@@ -53,30 +53,30 @@ I will however include Criterion as a dev-dependency. This means if you're runni
 # Completed Solutions #
 This table identifies which solutions have been completed and which are still yet to be done. Ideally these will get checked off at a rate of 2 per day to keep upto speed with release.
 
-|Day|Part 1|Part 2|
-|:-:|:-:|:-:|
-|01|:heavy_check_mark:|:heavy_check_mark:|
-|02|:heavy_check_mark:|:heavy_check_mark:|
-|03|:heavy_check_mark:|:heavy_check_mark:|
-|04|:heavy_check_mark:|:heavy_check_mark:|
-|05|:heavy_check_mark:|:heavy_check_mark:|
-|06|:heavy_check_mark:|:heavy_check_mark:|
-|07|:heavy_check_mark:|:heavy_check_mark:|
-|08|:heavy_check_mark:|:heavy_check_mark:|
-|09|:heavy_check_mark:|:heavy_check_mark:|
-|10|:heavy_check_mark:|:heavy_check_mark:|
-|11|:heavy_check_mark:|:heavy_check_mark:|
-|12|:heavy_check_mark:|:heavy_check_mark:|
-|13|:heavy_check_mark:|:heavy_check_mark:|
-|14|:heavy_check_mark:|:heavy_check_mark:|
-|15|:heavy_check_mark:|:heavy_check_mark:|
-|16|:heavy_check_mark:|:heavy_check_mark:|
-|17|:heavy_check_mark:|:heavy_check_mark:|
-|18|:heavy_check_mark:|:heavy_check_mark:|
-|19|:heavy_check_mark:|:heavy_check_mark:|
-|20|:heavy_check_mark:|:heavy_check_mark:|
-|21|:x:|:x:|
-|22|:x:|:x:|
-|23|:x:|:x:|
-|24|:x:|:x:|
-|25|:x:|:x:|
+|Puzzle|Part 1|Part 2|Benchmark (microseconds)|
+|:-:|:-:|:-:|;-;|
+|[Day 1 - Sonar Sweep](https://adventofcode.com/2021/day/1)|:heavy_check_mark:|:heavy_check_mark:|489|
+|[Day 2 - Dive!](https://adventofcode.com/2021/day/2)|:heavy_check_mark:|:heavy_check_mark:|201|
+|[Day 3 - Binary Diagnostic](https://adventofcode.com/2021/day/3)|:heavy_check_mark:|:heavy_check_mark:|311|
+|[Day 4 - Giant Squid](https://adventofcode.com/2021/day/4)|:heavy_check_mark:|:heavy_check_mark:|781|
+|[Day 5 - Hydrothermal Venture](https://adventofcode.com/2021/day/5)|:heavy_check_mark:|:heavy_check_mark:|22,862|
+|[Day 6 - Lanternfish](https://adventofcode.com/2021/day/6)|:heavy_check_mark:|:heavy_check_mark:|115|
+|[Day 7 - The Treachery of Whales](https://adventofcode.com/2021/day/7)|:heavy_check_mark:|:heavy_check_mark:|571,260|
+|[Day 8 - Seven Segment Search](https://adventofcode.com/2021/day/8)|:heavy_check_mark:|:heavy_check_mark:|398|
+|[Day 9 - Smoke Basin](https://adventofcode.com/2021/day/9)|:heavy_check_mark:|:heavy_check_mark:|894|
+|[Day 10 - Syntax Scoring](https://adventofcode.com/2021/day/10)|:heavy_check_mark:|:heavy_check_mark:|94|
+|[Day 11 - Dumbo Octopus](https://adventofcode.com/2021/day/11)|:heavy_check_mark:|:heavy_check_mark:|167|
+|[Day 12 - Passage Pathing](https://adventofcode.com/2021/day/12)|:heavy_check_mark:|:heavy_check_mark:|229,000|
+|[Day 13 - Transparent Origami](https://adventofcode.com/2021/day/13)|:heavy_check_mark:|:heavy_check_mark:|3,190|
+|[Day 14 - Extended Polymerization](https://adventofcode.com/2021/day/14)|:heavy_check_mark:|:heavy_check_mark:|877|
+|[Day 15 - Chiton](https://adventofcode.com/2021/day/15)|:heavy_check_mark:|:heavy_check_mark:|1,145,300|
+|[Day 16 - Packet Decoder](https://adventofcode.com/2021/day/16)|:heavy_check_mark:|:heavy_check_mark:|71|
+|[Day 17 - Trick Shot](https://adventofcode.com/2021/day/17)|:heavy_check_mark:|:heavy_check_mark:|251|
+|[Day 18 - Snailfish](https://adventofcode.com/2021/day/18)|:heavy_check_mark:|:heavy_check_mark:|226,500|
+|[Day 19 - Beacon Scanner](https://adventofcode.com/2021/day/19)|:heavy_check_mark:|:heavy_check_mark:|225,400|
+|[Day 20 - Trench Map](https://adventofcode.com/2021/day/20)|:heavy_check_mark:|:heavy_check_mark:|54,037|
+|21|:x:|:x:|-|
+|22|:x:|:x:|-|
+|23|:x:|:x:|-|
+|24|:x:|:x:|-|
+|25|:x:|:x:|-|
