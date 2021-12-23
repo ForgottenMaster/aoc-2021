@@ -3,7 +3,7 @@ mod image;
 
 use {crate::common::iter::FilterGroupMapExt, algorithm::Algorithm, image::Image};
 
-pub fn run(input: &str) -> (usize, u32) {
+pub fn run(input: &str) -> (usize, usize) {
     // Regroup lines into two groups, one for the algorithm, and one for the image.
     let mut iter = input.trim().lines().filter_group_map(
         |line| !line.trim().is_empty(),
@@ -21,12 +21,14 @@ pub fn run(input: &str) -> (usize, u32) {
     let mut image = iter.next().unwrap().parse::<Image>().unwrap();
 
     // Apply the enhancement algorithm to the image twice.
-    image = algorithm.apply(&algorithm.apply(&image));
-
-    // Part 1 answer is just the count of lit pixels.
+    (0..2).for_each(|_| image = algorithm.apply(&image));
     let part_1 = image.pixels().filter(|(_, _, pixel)| **pixel).count();
 
-    (part_1, 0)
+    // For part 2, we need to do another 48 times.
+    (0..48).for_each(|_| image = algorithm.apply(&image));
+    let part_2 = image.pixels().filter(|(_, _, pixel)| **pixel).count();
+
+    (part_1, part_2)
 }
 
 #[cfg(test)]
@@ -50,7 +52,7 @@ mod tests {
         ..#..
         ..###
         ";
-        const EXPECTED: (usize, u32) = (35, 0);
+        const EXPECTED: (usize, usize) = (35, 3351);
         assert_eq!(run(INPUT), EXPECTED);
     }
 }
