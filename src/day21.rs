@@ -1,6 +1,10 @@
-use std::{cmp::min, collections::HashMap, iter::once};
+use std::{
+    cmp::{max, min},
+    collections::HashMap,
+    iter::{once, repeat},
+};
 
-pub fn run(input: &str) -> (u64, u32) {
+pub fn run(input: &str) -> (u64, u64) {
     let mut iter = input.trim().lines().map(|line| {
         let position = line
             .trim()
@@ -17,7 +21,8 @@ pub fn run(input: &str) -> (u64, u32) {
     let mut universe_hashmap = HashMap::new();
     universe_hashmap.insert((player_1, player_2, NextPlayer::Player1), 1);
     let part_1 = calculate_part_1(universe_hashmap.clone());
-    (part_1, 0)
+    let part_2 = calculate_part_2(universe_hashmap);
+    (part_1, part_2)
 }
 
 /// Identifies the next player's turn to roll.
@@ -36,7 +41,7 @@ struct Player {
 
 /// Represents a total value of steps for a turn along with the number of universes that
 /// will produce those steps.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 struct DieResultUniverseCount {
     result: u16,
     universes: u8,
@@ -77,6 +82,26 @@ fn calculate_part_1(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>
         },
     );
     loser_score as u64 * die_rolls
+}
+
+/// Part 2 is calculated by using the dirac die stream that splits universes when it's rolled.
+/// Games will end at score 21 rather than 1000, and we will count the number of wins for each player.
+fn calculate_part_2(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>) -> u64 {
+    let mut player_1_wins = 0;
+    let mut player_2_wins = 0;
+    run_game(
+        universe_hashmap,
+        dirac_die_stream(),
+        21,
+        |(player_1, _), universes| {
+            *(if player_1.score >= 21 {
+                &mut player_1_wins
+            } else {
+                &mut player_2_wins
+            }) += universes;
+        },
+    );
+    max(player_1_wins, player_2_wins)
 }
 
 /// Runs the game with the given universes HashMap and roll stream. Will continually process
@@ -154,6 +179,43 @@ fn deterministic_die_stream() -> impl Iterator<Item = impl Iterator<Item = DieRe
     })
 }
 
+/// Produces the set of universes at each step for a Dirac die. This allows the game
+/// to progress by simulating each result only once and then multiplying the number
+/// of universes.
+fn dirac_die_stream() -> impl Iterator<Item = impl Iterator<Item = DieResultUniverseCount>> {
+    const RESULTS: [DieResultUniverseCount; 7] = [
+        DieResultUniverseCount {
+            result: 8,
+            universes: 3,
+        },
+        DieResultUniverseCount {
+            result: 9,
+            universes: 1,
+        },
+        DieResultUniverseCount {
+            result: 7,
+            universes: 6,
+        },
+        DieResultUniverseCount {
+            result: 6,
+            universes: 7,
+        },
+        DieResultUniverseCount {
+            result: 4,
+            universes: 3,
+        },
+        DieResultUniverseCount {
+            result: 5,
+            universes: 6,
+        },
+        DieResultUniverseCount {
+            result: 3,
+            universes: 1,
+        },
+    ];
+    repeat(RESULTS.into_iter())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,7 +226,7 @@ mod tests {
         Player 1 starting position: 4
         Player 2 starting position: 8
         ";
-        const EXPECTED: (u64, u32) = (739785, 0);
+        const EXPECTED: (u64, u64) = (739785, 444356092776315);
         assert_eq!(run(INPUT), EXPECTED);
     }
 
@@ -206,6 +268,21 @@ mod tests {
                 result: 15,
                 universes: 1
             }
+        );
+    }
+
+    #[test]
+    fn test_dirac_die_stream() {
+        let mut dirac_die_stream = dirac_die_stream();
+        let stream = dirac_die_stream.next().unwrap();
+        let expected = [(8, 3), (9, 1), (7, 6), (6, 7), (4, 3), (5, 6), (3, 1)]
+            .into_iter()
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            stream
+                .map(|DieResultUniverseCount { result, universes }| (result, universes))
+                .collect::<HashMap<_, _>>(),
+            expected
         );
     }
 }

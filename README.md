@@ -75,7 +75,7 @@ This table identifies which solutions have been completed and which are still ye
 |[Day 18 - Snailfish](https://adventofcode.com/2021/day/18)|:heavy_check_mark:|:heavy_check_mark:|226,500|
 |[Day 19 - Beacon Scanner](https://adventofcode.com/2021/day/19)|:heavy_check_mark:|:heavy_check_mark:|225,400|
 |[Day 20 - Trench Map](https://adventofcode.com/2021/day/20)|:heavy_check_mark:|:heavy_check_mark:|54,037|
-|[Day 21 - Dirac Dice](https://adventofcode.com/2021/day/21)|:heavy_check_mark:|:x:|26|
+|[Day 21 - Dirac Dice](https://adventofcode.com/2021/day/21)|:heavy_check_mark:|:heavy_check_mark:|735,190|
 |22|:x:|:x:|-|
 |23|:x:|:x:|-|
 |24|:x:|:x:|-|
