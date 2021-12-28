@@ -19,7 +19,7 @@ pub fn run(input: &str) -> (u64, u64) {
     });
     let (player_1, player_2) = (iter.next().unwrap(), iter.next().unwrap());
     let mut universe_hashmap = HashMap::new();
-    universe_hashmap.insert((player_1, player_2, NextPlayer::Player1), 1);
+    universe_hashmap.insert((player_1, player_2), 1);
     let part_1 = calculate_part_1(universe_hashmap.clone());
     let part_2 = calculate_part_2(universe_hashmap);
     (part_1, part_2)
@@ -71,7 +71,7 @@ impl Iterator for DeterministicDieStream {
 /// Calculates the result for part 1 of the puzzle. This uses deterministic die stream
 /// and runs the game up until a player hits 1000 points minimum. Once that's happened
 /// we return the losing players score multiplied by the number of die rolls.
-fn calculate_part_1(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>) -> u64 {
+fn calculate_part_1(universe_hashmap: HashMap<(Player, Player), u64>) -> u64 {
     let mut loser_score = 0;
     let die_rolls = run_game(
         universe_hashmap,
@@ -86,7 +86,7 @@ fn calculate_part_1(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>
 
 /// Part 2 is calculated by using the dirac die stream that splits universes when it's rolled.
 /// Games will end at score 21 rather than 1000, and we will count the number of wins for each player.
-fn calculate_part_2(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>) -> u64 {
+fn calculate_part_2(universe_hashmap: HashMap<(Player, Player), u64>) -> u64 {
     let mut player_1_wins = 0;
     let mut player_2_wins = 0;
     run_game(
@@ -111,39 +111,39 @@ fn calculate_part_2(universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>
 /// If a game state isn't a winner then it's put into the hashmap. Returns the number of times the die was
 /// actually rolled.
 fn run_game(
-    mut universe_hashmap: HashMap<(Player, Player, NextPlayer), u64>,
+    mut universe_hashmap: HashMap<(Player, Player), u64>,
     mut die_stream: impl Iterator<Item = impl Iterator<Item = DieResultUniverseCount>>,
     winning_score: u64,
     mut win_func: impl FnMut((Player, Player), u64),
 ) -> u64 {
     let mut die_count = 0;
+    let mut next_player = NextPlayer::Player1;
     while !universe_hashmap.is_empty() {
-        let player_state = (*universe_hashmap.keys().next().unwrap()).clone();
-        let universes = universe_hashmap.remove(&player_state).unwrap();
-        let (player_1_state, player_2_state, next_player) = player_state;
-        die_count += 3;
+        let mut new_universe_hashmap = HashMap::with_capacity(universe_hashmap.len());
+        for ((player_1_state, player_2_state), universes) in universe_hashmap {
+            die_count += 3;
+            die_stream.next().unwrap().for_each(|result| {
+                let (player_1_state, player_2_state) =
+                    apply_result(&player_1_state, &player_2_state, &next_player, &result);
+                let total_universes = universes * result.universes as u64;
 
-        die_stream.next().unwrap().for_each(|result| {
-            let (player_1_state, player_2_state) =
-                apply_result(&player_1_state, &player_2_state, &next_player, &result);
-
-            let total_universes = universes * result.universes as u64;
-
-            if player_1_state.score as u64 >= winning_score
-                || player_2_state.score as u64 >= winning_score
-            {
-                win_func((player_1_state, player_2_state), total_universes);
-            } else {
-                let next_player = match next_player {
-                    NextPlayer::Player1 => NextPlayer::Player2,
-                    NextPlayer::Player2 => NextPlayer::Player1,
-                };
-                let entry = universe_hashmap
-                    .entry((player_1_state, player_2_state, next_player))
-                    .or_insert(0);
-                *entry += total_universes;
-            }
-        });
+                if player_1_state.score as u64 >= winning_score
+                    || player_2_state.score as u64 >= winning_score
+                {
+                    win_func((player_1_state, player_2_state), total_universes);
+                } else {
+                    let entry = new_universe_hashmap
+                        .entry((player_1_state, player_2_state))
+                        .or_insert(0);
+                    *entry += total_universes;
+                }
+            });
+        }
+        universe_hashmap = new_universe_hashmap;
+        next_player = match next_player {
+            NextPlayer::Player1 => NextPlayer::Player2,
+            NextPlayer::Player2 => NextPlayer::Player1,
+        };
     }
     die_count
 }
